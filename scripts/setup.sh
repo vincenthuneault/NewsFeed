@@ -8,21 +8,32 @@ set -e
 echo "=== Lecteur de nouvelle — Setup ==="
 echo ""
 
-# Vérifier Python 3.11+
-PYTHON_VERSION=$(python3 --version 2>&1 | awk '{print $2}')
-MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
-MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
+# Trouver Python 3.11+ (essaie python3.11 d'abord, puis python3)
+PYTHON=""
+for cmd in python3.11 python3.12 python3.13 python3; do
+    if command -v "$cmd" &> /dev/null; then
+        VERSION=$($cmd --version 2>&1 | awk '{print $2}')
+        MAJOR=$(echo "$VERSION" | cut -d. -f1)
+        MINOR=$(echo "$VERSION" | cut -d. -f2)
+        if [ "$MAJOR" -ge 3 ] && [ "$MINOR" -ge 11 ]; then
+            PYTHON="$cmd"
+            PYTHON_VERSION="$VERSION"
+            break
+        fi
+    fi
+done
 
-if [ "$MAJOR" -lt 3 ] || ([ "$MAJOR" -eq 3 ] && [ "$MINOR" -lt 11 ]); then
-    echo "✗ Python 3.11+ requis (trouvé: $PYTHON_VERSION)"
+if [ -z "$PYTHON" ]; then
+    echo "✗ Python 3.11+ requis. Aucune version compatible trouvée."
+    echo "  Installe-le avec : sudo apt install python3.11 python3.11-venv python3.11-dev"
     exit 1
 fi
-echo "✓ Python $PYTHON_VERSION"
+echo "✓ Python $PYTHON_VERSION ($PYTHON)"
 
 # Créer le venv
 if [ ! -d "venv" ]; then
     echo "  Création du venv..."
-    python3 -m venv venv
+    $PYTHON -m venv venv
     echo "✓ venv créé"
 else
     echo "✓ venv existant"
