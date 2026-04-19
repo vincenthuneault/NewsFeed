@@ -17,7 +17,7 @@ database:
 
 # --- API Claude (Anthropic) ---
 claude:
-  model: "claude-sonnet-4-20250514"
+  model: "claude-sonnet-4-6"
   max_input_tokens: 2000
   max_output_tokens: 300
   temperature: 0.3

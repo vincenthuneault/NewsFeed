@@ -175,7 +175,7 @@ def check_claude_api() -> bool:
         import anthropic
 
         client = anthropic.Anthropic(api_key=api_key)
-        model = get_nested(config, "claude.model", "claude-sonnet-4-20250514")
+        model = get_nested(config, "claude.model", "claude-sonnet-4-6")
 
         message = client.messages.create(
             model=model,
