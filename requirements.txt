@@ -1,0 +1,48 @@
+# === Lecteur de nouvelle — Dépendances Python 3.11 ===
+
+# --- API & Web ---
+Flask==3.1.0
+gunicorn==22.0.0
+
+# --- Base de données ---
+SQLAlchemy==2.0.36
+alembic==1.14.1
+
+# --- LLM ---
+anthropic==0.42.0
+
+# --- YouTube ---
+google-api-python-client==2.159.0
+google-auth-oauthlib==1.2.1
+google-auth-httplib2==0.2.0
+
+# --- TTS (Google Cloud) ---
+google-cloud-texttospeech==2.21.1
+
+# --- RSS ---
+feedparser==6.0.11
+
+# --- Scraping ---
+beautifulsoup4==4.12.3
+requests==2.32.3
+lxml==5.3.0
+
+# --- Images ---
+Pillow==11.1.0
+
+# --- Déduplication ---
+rapidfuzz==3.10.1
+
+# --- Config ---
+PyYAML==6.0.2
+
+# --- Logging ---
+python-json-logger==3.2.1
+
+# --- Tests ---
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+
+# --- Utilitaires ---
+python-dotenv==1.0.1

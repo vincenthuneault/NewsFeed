@@ -1,0 +1,98 @@
+# ============================================================
+# Lecteur de nouvelle — Configuration principale
+# ============================================================
+
+# --- Général ---
+app:
+  name: "Lecteur de nouvelle"
+  env: "development"  # development | production
+  timezone: "America/Montreal"
+  daily_run_hour: 6  # Heure d'exécution quotidienne (24h)
+  max_feed_items: 30  # Nombre max d'items dans le fil quotidien
+
+# --- Base de données ---
+database:
+  url: "sqlite:///data/newsfeed.db"
+  echo: false  # Afficher les requêtes SQL (debug)
+
+# --- API Claude (Anthropic) ---
+claude:
+  model: "claude-sonnet-4-20250514"
+  max_input_tokens: 2000
+  max_output_tokens: 300
+  temperature: 0.3
+  # api_key dans secrets/.env → ANTHROPIC_API_KEY
+
+# --- TTS (Google Cloud Text-to-Speech) ---
+tts:
+  provider: "google"
+  language_code: "fr-CA"
+  voice_name: "fr-CA-Wavenet-A"  # Voix féminine québécoise
+  audio_encoding: "MP3"
+  max_duration_seconds: 60
+  # credentials dans secrets/google_tts_credentials.json
+
+# --- YouTube Data API ---
+youtube:
+  max_results_per_channel: 10
+  max_age_hours: 48  # Ignorer les vidéos plus vieilles
+  # oauth dans secrets/youtube_oauth.json
+  # api_key dans secrets/.env → YOUTUBE_API_KEY
+
+# --- RSS ---
+rss:
+  feeds:
+    tech_ai:
+      - url: "https://feeds.arstechnica.com/arstechnica/technology-lab"
+        name: "Ars Technica"
+      - url: "https://www.theverge.com/rss/index.xml"
+        name: "The Verge"
+    politique_ca:
+      - url: "https://ici.radio-canada.ca/rss/4159"
+        name: "Radio-Canada Politique"
+    politique_qc:
+      - url: "https://ici.radio-canada.ca/rss/4201"
+        name: "Radio-Canada Québec"
+    vehicules_ev:
+      - url: "https://electrek.co/feed/"
+        name: "Electrek"
+    spatial:
+      - url: "https://spacenews.com/feed/"
+        name: "SpaceNews"
+
+# --- Scoring ---
+scoring:
+  weights:
+    freshness: 0.30
+    reliability: 0.25
+    diversity: 0.20
+    feedback: 0.25
+  max_category_ratio: 0.40  # Max 40% du fil par catégorie
+  freshness_decay_hours: 48  # Décroissance temporelle
+
+# --- Images ---
+images:
+  max_width: 720
+  quality: 85
+  format: "JPEG"
+  defaults_dir: "static/images/defaults"
+
+# --- Déduplication ---
+deduplication:
+  fuzzy_threshold: 80  # Seuil rapidfuzz (0-100)
+  max_duplicate_ratio: 0.30  # Alerte si > 30% doublons
+
+# --- Serveur ---
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  secret_key: "CHANGE-ME-IN-PRODUCTION"
+
+# --- Logging ---
+logging:
+  level: "INFO"  # DEBUG | INFO | WARNING | ERROR
+  file: "logs/newsfeed.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 7
+  format: "json"  # json | text
