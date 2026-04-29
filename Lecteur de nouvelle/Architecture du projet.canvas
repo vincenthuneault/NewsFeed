@@ -1,0 +1,43 @@
+{
+	"nodes":[
+		{"id":"vue-ensemble","type":"file","file":"Projet personnel/Lecteur de nouvelle/Vue d'ensemble.md","x":0,"y":-500,"width":400,"height":200,"color":"1"},
+		{"id":"agents","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Agents de collecte.md","x":-800,"y":-100,"width":350,"height":180},
+		{"id":"pipeline","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Pipeline de traitement.md","x":-200,"y":-100,"width":350,"height":180},
+		{"id":"api","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/API REST.md","x":400,"y":-100,"width":350,"height":180},
+		{"id":"frontend","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Frontend mobile.md","x":1000,"y":-100,"width":350,"height":180},
+		{"id":"donnees","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Modèle de données.md","x":-200,"y":250,"width":350,"height":180,"color":"4"},
+		{"id":"infra","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Infrastructure et déploiement.md","x":400,"y":250,"width":350,"height":180},
+		{"id":"tests","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Tests et qualité.md","x":1000,"y":250,"width":350,"height":180,"color":"6"},
+		{"id":"manifeste","type":"file","file":"Projet personnel/Lecteur de nouvelle/Références/Manifeste technologique.md","x":-800,"y":250,"width":350,"height":180,"color":"5"},
+		{"id":"m0","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M0 — Setup.md","x":-1880,"y":550,"width":1160,"height":1590,"color":"2"},
+		{"id":"m1","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M1 — Vertical slice.md","x":-650,"y":550,"width":260,"height":140,"color":"2"},
+		{"id":"m2","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M2 — Multi-agents.md","x":-300,"y":550,"width":260,"height":140,"color":"2"},
+		{"id":"m3","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M3 — Feedback.md","x":50,"y":550,"width":260,"height":140,"color":"2"},
+		{"id":"m4","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M4 — Frontend complet.md","x":400,"y":550,"width":260,"height":140,"color":"2"},
+		{"id":"m5","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M5 — Production.md","x":750,"y":550,"width":260,"height":140,"color":"2"},
+		{"id":"label-milestones","type":"text","text":"# Milestones\n\nChaque gate valide TOUT ce qui précède.\nPas de raccourci.","x":1100,"y":550,"width":280,"height":140,"color":"2"},
+		{"id":"label-flow","type":"text","text":"# Flow de données\n\nSources → Agents → Pipeline → DB → API → Frontend\n\nChaque flèche = un contrat de données clair","x":-490,"y":-560,"width":380,"height":160,"color":"3"}
+	],
+	"edges":[
+		{"id":"e-vue-agents","fromNode":"vue-ensemble","fromSide":"bottom","toNode":"agents","toSide":"top","label":"collecte"},
+		{"id":"e-vue-pipeline","fromNode":"vue-ensemble","fromSide":"bottom","toNode":"pipeline","toSide":"top","label":"traitement"},
+		{"id":"e-vue-api","fromNode":"vue-ensemble","fromSide":"bottom","toNode":"api","toSide":"top","label":"service"},
+		{"id":"e-vue-frontend","fromNode":"vue-ensemble","fromSide":"bottom","toNode":"frontend","toSide":"top","label":"affichage"},
+		{"id":"e-agents-pipeline","fromNode":"agents","fromSide":"right","toNode":"pipeline","toSide":"left","color":"1","label":"RawNewsItem[]"},
+		{"id":"e-pipeline-api","fromNode":"pipeline","fromSide":"right","toNode":"api","toSide":"left","color":"1","label":"SQLite + fichiers"},
+		{"id":"e-api-frontend","fromNode":"api","fromSide":"right","toNode":"frontend","toSide":"left","color":"1","label":"JSON + media"},
+		{"id":"e-agents-donnees","fromNode":"agents","fromSide":"bottom","toNode":"donnees","toSide":"left","label":"produit"},
+		{"id":"e-pipeline-donnees","fromNode":"pipeline","fromSide":"bottom","toNode":"donnees","toSide":"top","label":"transforme"},
+		{"id":"e-api-infra","fromNode":"api","fromSide":"bottom","toNode":"infra","toSide":"top","label":"déployé sur"},
+		{"id":"e-tests-agents","fromNode":"tests","fromSide":"left","toNode":"pipeline","toSide":"right","color":"6","label":"teste"},
+		{"id":"e-manifeste-donnees","fromNode":"manifeste","fromSide":"right","toNode":"donnees","toSide":"left","color":"5","label":"définit"},
+		{"id":"e-m0-m1","fromNode":"m0","fromSide":"right","toNode":"m1","toSide":"left","color":"2","label":"Gate 0"},
+		{"id":"e-m1-m2","fromNode":"m1","fromSide":"right","toNode":"m2","toSide":"left","color":"2","label":"Gate 1"},
+		{"id":"e-m2-m3","fromNode":"m2","fromSide":"right","toNode":"m3","toSide":"left","color":"2","label":"Gate 2"},
+		{"id":"e-m3-m4","fromNode":"m3","fromSide":"right","toNode":"m4","toSide":"left","color":"2","label":"Gate 3"},
+		{"id":"e-m4-m5","fromNode":"m4","fromSide":"right","toNode":"m5","toSide":"left","color":"2","label":"Gate 4"},
+		{"id":"e-m1-agents","fromNode":"m1","fromSide":"top","toNode":"agents","toSide":"bottom"},
+		{"id":"e-m4-frontend","fromNode":"m4","fromSide":"top","toNode":"frontend","toSide":"bottom"},
+		{"id":"e-m5-infra","fromNode":"m5","fromSide":"top","toNode":"infra","toSide":"bottom"}
+	]
+}
