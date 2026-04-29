@@ -60,12 +60,13 @@ Sources (YouTube, RSS, scraping)
 
 | Milestone | Objectif | Statut |
 |-----------|----------|--------|
-| [[M0 — Setup]] | Valider les APIs et l'environnement | A faire |
-| [[M1 — Vertical slice]] | 1 agent end-to-end (YouTube → affichage) | A faire |
-| [[M2 — Multi-agents]] | ~7 agents + orchestrateur + scoring | A faire |
-| [[M3 — Feedback]] | Agents locaux + système de feedback | A faire |
-| [[M4 — Frontend complet]] | UI mobile + auth + PWA | A faire |
-| [[M5 — Production]] | Automatisation + monitoring 7 jours | A faire |
+| [[M0 — Setup]] | Valider les APIs et l'environnement | Terminé |
+| [[M1 — Vertical slice]] | 1 agent end-to-end (YouTube → affichage) | Terminé |
+| [[M2 — Multi-agents]] | ~7 agents + orchestrateur + scoring | Terminé |
+| [[M3 — Feedback]] | Agents locaux + système de feedback | Terminé |
+| [[M4 — Frontend complet]] | UI mobile + auth + PWA | Terminé |
+| [[M5 — Production]] | Automatisation + monitoring 7 jours | Terminé |
+| [[M6 — Commentaires et bugs]] | Commentaires sur les nouvelles + rapport de bugs | En cours |
 
 ---
 

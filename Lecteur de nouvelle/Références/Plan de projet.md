@@ -12,15 +12,16 @@
 
 ## Progression
 
-| De | Vers | Condition |
-|----|------|-----------|
-| — | [[M0 — Setup\|M0]] | On commence |
-| M0 | [[M1 — Vertical slice\|M1]] | Gate 0 : POC APIs OK + tests unit M0 |
-| M1 | [[M2 — Multi-agents\|M2]] | Gate 1 : POC vertical slice + tests M0+M1 |
-| M2 | [[M3 — Feedback\|M3]] | Gate 2 : POC multi-agents + tests M0→M2 |
-| M3 | [[M4 — Frontend complet\|M4]] | Gate 3 : POC feedback + tests M0→M3 |
-| M4 | [[M5 — Production\|M5]] | Gate 4 : POC mobile + tests M0→M4 |
-| M5 | Terminé | Gate 5 : 7 jours autonomes + régression complète |
+| De | Vers | Condition | Statut |
+|----|------|-----------|--------|
+| — | [[M0 — Setup\|M0]] | On commence | ✅ Terminé |
+| M0 | [[M1 — Vertical slice\|M1]] | Gate 0 : POC APIs OK + tests unit M0 | ✅ Terminé |
+| M1 | [[M2 — Multi-agents\|M2]] | Gate 1 : POC vertical slice + tests M0+M1 | ✅ Terminé |
+| M2 | [[M3 — Feedback\|M3]] | Gate 2 : POC multi-agents + tests M0→M2 | ✅ Terminé |
+| M3 | [[M4 — Frontend complet\|M4]] | Gate 3 : POC feedback + tests M0→M3 | ✅ Terminé |
+| M4 | [[M5 — Production\|M5]] | Gate 4 : POC mobile + tests M0→M4 | ✅ Terminé |
+| M5 | [[M6 — Commentaires et bugs\|M6]] | Gate 5 : 7 jours autonomes + régression complète | ✅ Terminé |
+| M6 | Terminé | Gate 6 : commentaires + bugs validés + aucune régression | 🔄 En cours |
 
 **Chaque gate exécute la suite de régression complète. Pas de raccourci.**
 
