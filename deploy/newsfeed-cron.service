@@ -1,0 +1,17 @@
+[Unit]
+Description=Lecteur de nouvelle — Pipeline quotidien
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=vhds
+Group=vhds
+WorkingDirectory=/home/vhds/NewsFeed
+EnvironmentFile=/home/vhds/NewsFeed/secrets/.env
+ExecStart=/home/vhds/NewsFeed/venv/bin/python \
+    /home/vhds/NewsFeed/scripts/run_pipeline.py
+TimeoutStartSec=900
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=newsfeed-cron

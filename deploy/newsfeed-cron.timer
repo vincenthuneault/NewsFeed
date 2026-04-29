@@ -1,0 +1,14 @@
+[Unit]
+Description=Lecteur de nouvelle — Timer quotidien 6h00
+Requires=newsfeed-cron.service
+
+[Timer]
+# Lance à 6h00 chaque jour (heure locale)
+OnCalendar=*-*-* 06:00:00
+# Si le serveur était éteint, rattrape le tir au démarrage
+Persistent=true
+# Délai aléatoire de 0 à 5 min pour éviter les pics de charge
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

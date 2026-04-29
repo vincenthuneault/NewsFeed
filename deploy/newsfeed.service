@@ -1,0 +1,25 @@
+[Unit]
+Description=Lecteur de nouvelle — API Flask (Gunicorn)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=vhds
+Group=vhds
+WorkingDirectory=/home/vhds/NewsFeed
+EnvironmentFile=/home/vhds/NewsFeed/secrets/.env
+ExecStart=/home/vhds/NewsFeed/venv/bin/gunicorn \
+    --config /home/vhds/NewsFeed/deploy/gunicorn.conf.py \
+    backend.app:create_app()
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5s
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
