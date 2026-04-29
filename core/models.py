@@ -120,6 +120,7 @@ class NewsItem(Base):
 
     # Relations
     feedbacks = relationship("Feedback", back_populates="news_item", cascade="all, delete-orphan")
+    comments  = relationship("NewsComment", back_populates="news_item", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"<NewsItem(id={self.id}, title='{self.title[:40]}...')>"
@@ -164,6 +165,42 @@ class Feedback(Base):
 
     def __repr__(self) -> str:
         return f"<Feedback(news_item_id={self.news_item_id}, action='{self.action}')>"
+
+
+class NewsComment(Base):
+    """Note personnelle de l'utilisateur sur une nouvelle."""
+
+    __tablename__ = "news_comments"
+
+    id           = Column(Integer, primary_key=True, autoincrement=True)
+    news_item_id = Column(Integer, ForeignKey("news_items.id"), nullable=False, index=True)
+    body         = Column(Text, nullable=False)
+
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    news_item = relationship("NewsItem", back_populates="comments")
+
+    def __repr__(self) -> str:
+        return f"<NewsComment(news_item_id={self.news_item_id})>"
+
+
+class BugReport(Base):
+    """Rapport de bug soumis depuis l'interface."""
+
+    __tablename__ = "bug_reports"
+
+    id          = Column(Integer, primary_key=True, autoincrement=True)
+    description = Column(Text, nullable=False)
+    context     = Column(Text, nullable=True)  # JSON : article actif, user_agent, timestamp
+
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    def __repr__(self) -> str:
+        return f"<BugReport(id={self.id})>"
 
 
 class AgentRun(Base):

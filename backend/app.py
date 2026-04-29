@@ -28,12 +28,16 @@ def create_app(config: dict | None = None) -> Flask:
 
     # Blueprints API
     from backend.api.auth import auth_bp
+    from backend.api.bugs import bugs_bp
+    from backend.api.comments import comments_bp
     from backend.api.feed import feed_bp
     from backend.api.feedback import feedback_bp
     from backend.api.health import health_bp
     from backend.api.settings import settings_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(bugs_bp, url_prefix="/api")
+    app.register_blueprint(comments_bp, url_prefix="/api")
     app.register_blueprint(feed_bp, url_prefix="/api")
     app.register_blueprint(feedback_bp, url_prefix="/api")
     app.register_blueprint(health_bp, url_prefix="/api")

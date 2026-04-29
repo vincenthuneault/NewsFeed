@@ -45,6 +45,24 @@ export async function postFeedback(newsId, action) {
   return res.json();
 }
 
+export async function postComment(newsId, body) {
+  const res = await apiFetch(`/api/news/${newsId}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function postBugReport(description, context) {
+  const res = await apiFetch("/api/bugs", {
+    method: "POST",
+    body: JSON.stringify({ description, context }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 export async function getAuthStatus() {
   const res = await fetch("/api/auth/status");
   return res.json();

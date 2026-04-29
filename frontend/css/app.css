@@ -362,6 +362,48 @@ iframe.card__image { border: none; }
   color: var(--text);
 }
 
+/* Textarea inline dans le menu (commentaires + bugs) */
+.menu-input-section { display: flex; flex-direction: column; }
+
+.menu-textarea-wrapper {
+  padding: 0.3rem 0.85rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.menu-textarea {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 0.55rem;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  padding: 0.55rem 0.7rem;
+  resize: none;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.menu-textarea:focus { border-color: var(--accent); }
+.menu-textarea::placeholder { color: var(--text-muted); }
+
+.menu-send-btn {
+  align-self: flex-end;
+  background: var(--accent);
+  border: none;
+  border-radius: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  transition: background 0.15s;
+}
+.menu-send-btn:hover { background: #3a7ce0; }
+.menu-send-btn:disabled { background: #555; cursor: not-allowed; }
+
 /* Calendrier inline dans le menu */
 .menu-cal-section { display: flex; flex-direction: column; }
 

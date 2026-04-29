@@ -3,7 +3,7 @@
  *          menu principal fixe ⋮ (feedback + calendrier + logout).
  */
 
-import { postFeedback, getFeedDates } from "./api.js";
+import { postFeedback, getFeedDates, postComment, postBugReport } from "./api.js";
 import { buildAudioBar } from "./player.js";
 
 // ── Toast ─────────────────────────────────────────────────────────
@@ -163,6 +163,18 @@ async function _renderMenu(menu, item, onDateSelected, onLogout) {
       menu.appendChild(link);
     }
 
+    // ── Commentaire ──
+    menu.appendChild(_buildInputSection({
+      icon: "💬",
+      label: "Commenter",
+      placeholder: "Votre commentaire…",
+      onSend: async (text) => {
+        await postComment(item.id, text);
+        menu.classList.add("hidden");
+        showToast("💬 Commentaire enregistré");
+      },
+    }));
+
     _menuDivider(menu);
   }
 
@@ -212,6 +224,26 @@ async function _renderMenu(menu, item, onDateSelected, onLogout) {
 
   _menuDivider(menu);
 
+  // ── Rapport de bug ──
+  menu.appendChild(_buildInputSection({
+    icon: "🐛",
+    label: "Signaler un bug",
+    placeholder: "Décrivez le problème…",
+    onSend: async (text) => {
+      const context = {
+        article_id: item?.id ?? null,
+        article_title: item?.title ?? null,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      };
+      await postBugReport(text, context);
+      menu.classList.add("hidden");
+      showToast("🐛 Bug signalé, merci !");
+    },
+  }));
+
+  _menuDivider(menu);
+
   // ── Déconnexion ──
   menu.appendChild(_menuBtn("⎋", "Déconnexion", () => {
     menu.classList.add("hidden");
@@ -231,6 +263,44 @@ function _menuDivider(parent) {
   const hr = document.createElement("div");
   hr.className = "menu-divider";
   parent.appendChild(hr);
+}
+
+function _buildInputSection({ icon, label, placeholder, onSend }) {
+  const section = document.createElement("div");
+  section.className = "menu-input-section";
+
+  const area = document.createElement("div");
+  area.className = "menu-textarea-wrapper hidden";
+
+  const textarea = document.createElement("textarea");
+  textarea.className = "menu-textarea";
+  textarea.placeholder = placeholder;
+  textarea.rows = 3;
+
+  const sendBtn = document.createElement("button");
+  sendBtn.className = "menu-send-btn";
+  sendBtn.textContent = "Envoyer";
+  sendBtn.addEventListener("click", async () => {
+    const text = textarea.value.trim();
+    if (!text) return;
+    sendBtn.disabled = true;
+    try {
+      await onSend(text);
+    } catch {
+      showToast("Erreur");
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
+
+  area.appendChild(textarea);
+  area.appendChild(sendBtn);
+
+  const toggle = _menuBtn(icon, label, () => area.classList.toggle("hidden"));
+  section.appendChild(toggle);
+  section.appendChild(area);
+
+  return section;
 }
 
 function _esc(str) {
