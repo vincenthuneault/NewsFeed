@@ -13,18 +13,12 @@
 <body>
 
   <!-- ── Écran de login ── -->
-  <div id="login-screen" class="hidden" role="main" aria-label="Connexion">
+  <div id="login-screen" class="hidden" role="main">
     <div class="login-card">
       <h1 class="login-title">📰 Lecteur de nouvelle</h1>
       <form id="login-form" autocomplete="off">
-        <input
-          id="login-password"
-          type="password"
-          class="login-input"
-          placeholder="Mot de passe"
-          autocomplete="current-password"
-          required
-        />
+        <input id="login-password" type="password" class="login-input"
+               placeholder="Mot de passe" autocomplete="current-password" required />
         <button type="submit" class="login-btn">Connexion</button>
         <p id="login-error" class="login-error" role="alert"></p>
       </form>
@@ -34,11 +28,11 @@
   <!-- ── Application ── -->
   <div id="app-screen" class="hidden">
 
-    <!-- Barre supérieure -->
+    <!-- Barre supérieure : compteur à gauche, ⋮ à droite -->
     <div id="top-bar">
       <div id="counter" aria-live="polite"></div>
       <div id="top-bar-actions">
-        <button id="btn-logout" class="btn-top" aria-label="Déconnexion" title="Déconnexion">⎋</button>
+        <!-- Le bouton ⋮ est injecté ici par app.js -->
       </div>
     </div>
 
@@ -55,8 +49,6 @@
   </div>
 
   <script type="module" src="/js/app.js"></script>
-
-  <!-- Service worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});

@@ -3,24 +3,17 @@
  */
 
 import { getAuthStatus, login, logout } from "./api.js";
-import { loadFeed, setupProgressBar } from "./feed.js";
-import { buildCalendarBtn, showToast } from "./ui.js";
-
-// ── Auth ──────────────────────────────────────────────────────────
+import { loadFeed, setupProgressBar, getActiveItem } from "./feed.js";
+import { buildMainMenu, showToast } from "./ui.js";
 
 const loginScreen = document.getElementById("login-screen");
-const appScreen = document.getElementById("app-screen");
-const loginForm = document.getElementById("login-form");
-const loginError = document.getElementById("login-error");
-const btnLogout = document.getElementById("btn-logout");
+const appScreen   = document.getElementById("app-screen");
+const loginForm   = document.getElementById("login-form");
+const loginError  = document.getElementById("login-error");
 
 async function init() {
   const { authenticated } = await getAuthStatus();
-  if (authenticated) {
-    showApp();
-  } else {
-    showLogin();
-  }
+  authenticated ? showApp() : showLogin();
 }
 
 function showLogin() {
@@ -39,19 +32,9 @@ loginForm?.addEventListener("submit", async (e) => {
   const pwd = document.getElementById("login-password").value;
   loginError.textContent = "";
   const { ok, data } = await login(pwd);
-  if (ok) {
-    showApp();
-  } else {
-    loginError.textContent = data.message || "Mot de passe incorrect";
-  }
+  ok ? showApp() : (loginError.textContent = data.message || "Mot de passe incorrect");
 });
 
-btnLogout?.addEventListener("click", async () => {
-  await logout();
-  showLogin();
-});
-
-// Session expirée depuis l'API
 window.addEventListener("auth:expired", showLogin);
 
 // ── App ───────────────────────────────────────────────────────────
@@ -59,18 +42,22 @@ window.addEventListener("auth:expired", showLogin);
 function startApp() {
   loadFeed("today");
 
-  // Vérification sur le DOM — le flag module se reset au rechargement de page,
-  // le DOM est la seule source de vérité fiable entre login/logout.
-  if (document.getElementById("btn-calendar")) return;
+  // Initialise l'UI une seule fois — vérifie la présence du bouton dans le DOM
+  if (document.getElementById("btn-menu")) return;
 
   setupProgressBar();
 
+  // Bouton ⋮ unique dans #top-bar-actions
   const actions = document.getElementById("top-bar-actions");
-  const calBtn = buildCalendarBtn((date) => {
-    loadFeed(date);
-    showToast(`Fil du ${date}`);
+  const menuBtn = buildMainMenu({
+    getActiveItem,
+    onDateSelected: (date) => loadFeed(date),
+    onLogout: async () => {
+      await logout();
+      showLogin();
+    },
   });
-  actions?.insertBefore(calBtn, actions.firstChild);
+  actions?.appendChild(menuBtn);
 }
 
 init();

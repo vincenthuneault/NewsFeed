@@ -1,9 +1,10 @@
 /**
- * ui.js — Construction des cartes, menu options, toast, calendrier.
+ * ui.js — Construction des cartes (sans bouton par carte),
+ *          menu principal fixe ⋮ (feedback + calendrier + logout).
  */
 
 import { postFeedback, getFeedDates } from "./api.js";
-import { buildAudioBar, activateVideoPlayer, deactivateVideoPlayer, stopCurrentAudio } from "./player.js";
+import { buildAudioBar } from "./player.js";
 
 // ── Toast ─────────────────────────────────────────────────────────
 
@@ -19,7 +20,7 @@ export function showToast(msg) {
   _toastTimer = setTimeout(() => _toast.classList.remove("show"), 2200);
 }
 
-// ── Card builder ──────────────────────────────────────────────────
+// ── Card (simple, sans bouton ⋮ par carte) ───────────────────────
 
 export function buildCard(item, idx) {
   const div = document.createElement("div");
@@ -28,13 +29,8 @@ export function buildCard(item, idx) {
   div.dataset.id = item.id;
   div.dataset.videoType = item.video_type || "";
 
-  // Image / vidéo longue overlay
   _appendMedia(div, item, idx);
 
-  // Bouton options
-  div.appendChild(_buildOptionsBtn(item));
-
-  // Body
   const body = document.createElement("div");
   body.className = "card__body";
 
@@ -54,26 +50,13 @@ export function buildCard(item, idx) {
   summary.textContent = item.summary_fr || item.description || "";
   body.appendChild(summary);
 
-  if (item.source_url) {
-    const link = document.createElement("a");
-    link.className = "card__link";
-    link.href = item.source_url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = item.video_type === "long" ? "▶ Voir sur YouTube ↗" : "Voir la source ↗";
-    body.appendChild(link);
-  }
-
   div.appendChild(body);
-
   if (item.audio_path) div.appendChild(buildAudioBar(item));
 
   return div;
 }
 
 function _appendMedia(cardEl, item, idx) {
-  // Shorts → image pour l'instant, player.js l'active au scroll
-  // Long → image avec overlay "Voir sur YouTube"
   if (item.image_path || item.image_url) {
     const img = document.createElement("img");
     img.className = "card__image";
@@ -86,7 +69,6 @@ function _appendMedia(cardEl, item, idx) {
     cardEl.appendChild(_placeholder());
   }
 
-  // Overlay play pour les longues vidéos
   if (item.video_type === "long" && item.video_url) {
     const overlay = document.createElement("a");
     overlay.className = "video-overlay";
@@ -105,141 +87,151 @@ function _placeholder() {
   return el;
 }
 
-// ── Options menu ──────────────────────────────────────────────────
+// ── Menu principal fixe ⋮ ────────────────────────────────────────
+//
+// Un seul bouton dans le coin supérieur droit de l'écran.
+// Le contenu du menu dépend de l'article actif au moment de l'ouverture.
 
-function _buildOptionsBtn(item) {
+export function buildMainMenu({ getActiveItem, onDateSelected, onLogout }) {
+  // Nettoyer une instance précédente
+  document.getElementById("btn-menu")?.remove();
+  document.getElementById("main-menu")?.remove();
+
+  // Bouton ⋮
   const btn = document.createElement("button");
-  btn.className = "btn-options";
-  btn.setAttribute("aria-label", "Options");
+  btn.id = "btn-menu";
+  btn.className = "btn-top";
+  btn.setAttribute("aria-label", "Menu");
   btn.textContent = "⋮";
 
-  const panel = _buildFeedbackPanel(item);
-  btn.after(panel); // sera ajouté à la carte par l'appelant
+  // Menu
+  const menu = document.createElement("div");
+  menu.id = "main-menu";
+  menu.className = "main-menu hidden";
+  menu.addEventListener("click", (e) => e.stopPropagation());
+  document.body.appendChild(menu);
 
-  // On attache le panel au même parent que le btn
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
-    document.querySelectorAll(".feedback-panel:not(.hidden)").forEach((p) => {
-      if (p !== panel) p.classList.add("hidden");
-    });
-    panel.classList.toggle("hidden");
+    _renderMenu(menu, getActiveItem(), onDateSelected, onLogout);
+    menu.classList.toggle("hidden");
   });
 
-  // Wrapper pour qu'ils soient tous les deux dans la carte
-  const wrap = document.createDocumentFragment();
-  wrap.appendChild(btn);
-  wrap.appendChild(panel);
-  return wrap;
-}
+  document.addEventListener("click", () => menu.classList.add("hidden"), { passive: true });
 
-function _buildFeedbackPanel(item) {
-  const panel = document.createElement("div");
-  panel.className = "feedback-panel hidden";
-
-  const actions = [
-    { action: "like",    label: "J'aime",         icon: "👍" },
-    { action: "dislike", label: "Je n'aime pas",   icon: "👎" },
-    { action: "skip",    label: "Ignorer",          icon: "⏭" },
-  ];
-
-  if (item.source_url) {
-    const link = document.createElement("a");
-    link.className = "btn-feedback panel-link";
-    link.href = item.source_url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.innerHTML = `<span>🔗</span><span>Source</span>`;
-    panel.appendChild(link);
-  }
-
-  actions.forEach(({ action, label, icon }) => {
-    const btn = document.createElement("button");
-    btn.className = "btn-feedback";
-    btn.innerHTML = `<span>${icon}</span><span>${label}</span>`;
-    btn.addEventListener("click", async () => {
-      try {
-        await postFeedback(item.id, action);
-        panel.classList.add("hidden");
-        panel.querySelectorAll(".btn-feedback").forEach((b) =>
-          b.classList.remove("active-like", "active-dislike")
-        );
-        if (action === "like") btn.classList.add("active-like");
-        if (action === "dislike") btn.classList.add("active-dislike");
-        showToast({ like: "👍 Aimé", dislike: "👎 Noté", skip: "⏭ Ignoré" }[action]);
-      } catch {
-        showToast("Erreur");
-      }
-    });
-    panel.appendChild(btn);
-  });
-
-  document.addEventListener("click", () => panel.classList.add("hidden"), { passive: true });
-  return panel;
-}
-
-// ── Calendrier ────────────────────────────────────────────────────
-
-export function buildCalendarBtn(onDateSelected) {
-  // Nettoyer toute instance précédente avant de créer — idempotent
-  // même si du JS mis en cache appelle cette fonction plusieurs fois
-  document.getElementById("btn-calendar")?.remove();
-  document.querySelectorAll(".calendar-modal").forEach((m) => m.remove());
-
-  const btn = document.createElement("button");
-  btn.id = "btn-calendar";
-  btn.className = "btn-calendar";
-  btn.setAttribute("aria-label", "Historique");
-  btn.textContent = "📅";
-
-  const modal = document.createElement("div");
-  modal.id = "calendar-modal";
-  modal.className = "calendar-modal hidden";
-  modal.addEventListener("click", (e) => e.stopPropagation());
-  document.body.appendChild(modal);
-
-  btn.addEventListener("click", async (e) => {
-    e.stopPropagation();
-    await _populateCalendar(modal, onDateSelected);
-    modal.classList.toggle("hidden");
-  });
-
-  // Un seul listener global suffit — on le nomme pour pouvoir le retirer si besoin
-  document.addEventListener("click", () => modal.classList.add("hidden"), { passive: true });
   return btn;
 }
 
-function _buildCalendarModal(onDateSelected, triggerBtn) {
-  const modal = document.createElement("div");
-  modal.className = "calendar-modal hidden";
-  modal.addEventListener("click", (e) => e.stopPropagation());
-  return modal;
-}
+async function _renderMenu(menu, item, onDateSelected, onLogout) {
+  menu.innerHTML = "";
 
-async function _populateCalendar(modal, onDateSelected) {
-  modal.innerHTML = `<div class="calendar-title">📅 Historique</div>`;
-  try {
-    const { dates } = await getFeedDates();
-    if (!dates.length) {
-      modal.innerHTML += `<p class="calendar-empty">Aucun fil disponible</p>`;
-      return;
-    }
-    dates.forEach(({ date, count }) => {
-      const btn = document.createElement("button");
-      btn.className = "calendar-date";
-      const label = date === new Date().toISOString().slice(0, 10) ? `Aujourd'hui` : date;
-      btn.textContent = `${label}  (${count})`;
-      btn.addEventListener("click", () => {
-        modal.classList.add("hidden");
-        onDateSelected(date);
-      });
-      modal.appendChild(btn);
-    });
-  } catch {
-    modal.innerHTML += `<p class="calendar-empty">Erreur de chargement</p>`;
+  // ── En-tête : titre de l'article actif ──
+  if (item) {
+    const header = document.createElement("div");
+    header.className = "menu-header";
+    header.textContent = item.title.length > 55 ? item.title.slice(0, 52) + "…" : item.title;
+    menu.appendChild(header);
+    _menuDivider(menu);
   }
+
+  // ── Feedback ──
+  if (item) {
+    const feedbackActions = [
+      { action: "like",    icon: "👍", label: "J'aime" },
+      { action: "dislike", icon: "👎", label: "Je n'aime pas" },
+      { action: "skip",    icon: "⏭",  label: "Ignorer" },
+    ];
+    feedbackActions.forEach(({ action, icon, label }) => {
+      menu.appendChild(_menuBtn(icon, label, async () => {
+        try {
+          await postFeedback(item.id, action);
+          menu.classList.add("hidden");
+          showToast({ like: "👍 Aimé", dislike: "👎 Noté", skip: "⏭ Ignoré" }[action]);
+        } catch { showToast("Erreur"); }
+      }));
+    });
+
+    // Lien source
+    if (item.source_url) {
+      const link = document.createElement("a");
+      link.className = "menu-item menu-link";
+      link.href = item.source_url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.innerHTML = `<span>🔗</span><span>Voir la source</span>`;
+      link.addEventListener("click", () => menu.classList.add("hidden"));
+      menu.appendChild(link);
+    }
+
+    _menuDivider(menu);
+  }
+
+  // ── Calendrier (dates disponibles inline) ──
+  const calSection = document.createElement("div");
+  calSection.className = "menu-cal-section";
+
+  const calToggle = _menuBtn("📅", "Historique", () => {
+    calDates.classList.toggle("hidden");
+  });
+  calSection.appendChild(calToggle);
+
+  const calDates = document.createElement("div");
+  calDates.className = "menu-cal-dates hidden";
+  calSection.appendChild(calDates);
+  menu.appendChild(calSection);
+
+  // Charger les dates à la demande
+  calToggle.addEventListener("click", async () => {
+    if (!calDates.classList.contains("hidden") && calDates.children.length > 0) return;
+    calDates.innerHTML = `<div class="menu-cal-loading">Chargement…</div>`;
+    try {
+      const { dates } = await getFeedDates();
+      calDates.innerHTML = "";
+      if (!dates.length) {
+        calDates.innerHTML = `<div class="menu-cal-loading">Aucun fil disponible</div>`;
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      dates.forEach(({ date, count }) => {
+        const d = _menuBtn(
+          "",
+          `${date === today ? "Aujourd'hui" : date}  (${count})`,
+          () => {
+            menu.classList.add("hidden");
+            onDateSelected(date);
+            showToast(`Fil du ${date}`);
+          }
+        );
+        d.classList.add("menu-cal-date");
+        calDates.appendChild(d);
+      });
+    } catch {
+      calDates.innerHTML = `<div class="menu-cal-loading">Erreur</div>`;
+    }
+  }, { once: true });
+
+  _menuDivider(menu);
+
+  // ── Déconnexion ──
+  menu.appendChild(_menuBtn("⎋", "Déconnexion", () => {
+    menu.classList.add("hidden");
+    onLogout();
+  }));
 }
 
-// ── Utils ─────────────────────────────────────────────────────────
+function _menuBtn(icon, label, onClick) {
+  const btn = document.createElement("button");
+  btn.className = "menu-item";
+  btn.innerHTML = icon ? `<span class="menu-icon">${icon}</span><span>${label}</span>` : `<span>${label}</span>`;
+  btn.addEventListener("click", onClick);
+  return btn;
+}
+
+function _menuDivider(parent) {
+  const hr = document.createElement("div");
+  hr.className = "menu-divider";
+  parent.appendChild(hr);
+}
 
 function _esc(str) {
   return (str || "").replace(/[&<>"']/g, (c) =>
