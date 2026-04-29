@@ -3,7 +3,7 @@
  * Stratégie : Cache First pour les assets, Network First pour l'API.
  */
 
-const CACHE = "newsfeed-v1";
+const CACHE = "newsfeed-v2";
 const STATIC_ASSETS = ["/", "/css/app.css", "/js/app.js", "/js/api.js", "/js/feed.js", "/js/player.js", "/js/ui.js"];
 
 self.addEventListener("install", (e) => {
