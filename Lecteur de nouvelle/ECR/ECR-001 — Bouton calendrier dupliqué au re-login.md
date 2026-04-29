@@ -1,9 +1,9 @@
 # ECR-001 — Bouton calendrier dupliqué au re-login
 
-> **Statut** : Corrigé  
+> **Statut** : Corrigé (3e tentative)  
 > **Sévérité** : Moyen — UX cassée, pas de perte de données  
 > **Découvert** : 2026-04-29 (test mobile Android)  
-> **Corrigé dans** : commit `[fix] startApp() idempotent + calendrier dans top-bar-actions`
+> **Corrigé dans** : commit `[fix] Garde DOM + JS exclu du cache service worker`
 
 ---
 
@@ -14,9 +14,15 @@
 
 ---
 
-## Cause racine
+## Cause racine (finale — 2 couches)
 
-`startApp()` était appelé à chaque `showApp()` (donc à chaque login réussi), sans garde. Chaque appel créait un nouveau `buildCalendarBtn()` et l'appendait au DOM sans vérifier si un bouton existait déjà.
+**Couche 1 — Absence de garde dans `startApp()`**
+`startApp()` était appelé à chaque `showApp()` sans vérifier si le bouton existait déjà.
+
+**Couche 2 — Cache service worker (plus subtile)**
+La première correction utilisait un flag module (`_appStarted`). Ce flag se reset à `false` à chaque rechargement complet de la page (force kill PWA). Le service worker en Cache First servait l'ancien `app.js` même après un déploiement, masquant les correctifs.
+
+**Leçon clé** : dans une PWA, un flag module n'est jamais une garde fiable entre sessions. Seul le DOM est persistant au sein d'une même page chargée.
 
 ```js
 // AVANT (bug)
@@ -74,10 +80,15 @@ Tout composant UI initialisé dans `startApp()` doit être **idempotent** : appe
 
 ### Règle générale à appliquer
 
-> Tout code qui modifie le DOM dans une fonction appelée au login **doit** utiliser l'une de ces stratégies :
-> 1. **Garde par flag** (`if (_started) return`)
-> 2. **Vérification d'existence** (`if (!document.getElementById('btn-calendar'))`)
-> 3. **Supprimer avant de recréer** (`el.remove()` puis recréer)
+> Tout code qui modifie le DOM dans une fonction appelée au login **doit** utiliser :
+> 1. **Vérification DOM** (`if (!document.getElementById('btn-calendar'))`) — seule garde fiable en PWA
+> 2. **Supprimer avant de recréer** (`el.remove()` puis recréer) — alternative sûre
+>
+> ⚠️ **Ne pas utiliser** un flag module (`let _started = false`) comme garde unique dans une PWA — il se reset à chaque rechargement de page (force kill).
+
+### Règle service worker
+
+> Les fichiers JS ne doivent **jamais** être mis en Cache First dans le service worker. Utiliser Network First ou les exclure complètement du cache. Un JS caché bloque le déploiement de correctifs sans que l'utilisateur le sache.
 
 ---
 
