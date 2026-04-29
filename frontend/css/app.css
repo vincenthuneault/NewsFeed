@@ -12,6 +12,7 @@
 
 html, body {
   height: 100%;
+  overflow: hidden;          /* body ne scrolle jamais — tout le scroll est dans #feed */
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
