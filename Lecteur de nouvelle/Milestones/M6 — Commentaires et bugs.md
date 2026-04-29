@@ -162,6 +162,21 @@ export async function postBugReport(description, context) {
 
 ---
 
+## Stockage
+
+| Élément | Détail |
+|---------|--------|
+| Type de base de données | SQLite 3 |
+| Fichier | `/home/vhds/NewsFeed/data/newsfeed.db` |
+| Création des tables | Automatique au démarrage via `Base.metadata.create_all()` |
+| Table commentaires | `news_comments` |
+| Table rapports de bugs | `bug_reports` |
+
+Les tables sont créées automatiquement — aucune migration manuelle nécessaire.  
+Voir [[Modèle de données]] pour le schéma complet des colonnes.
+
+---
+
 ## Fichiers à créer / modifier
 
 | Fichier | Action | Détail |

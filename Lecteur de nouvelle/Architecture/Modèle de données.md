@@ -63,10 +63,42 @@
 |-------|--------|
 | Moteur | SQLite 3 |
 | ORM | SQLAlchemy 2.0 (déclaratif) |
-| Migrations | Alembic |
-| Emplacement | `data/newsfeed.db` |
+| Migrations | `Base.metadata.create_all()` au démarrage |
+| Fichier | `/home/vhds/NewsFeed/data/newsfeed.db` |
+| Config | `config.yaml` → `database.url: sqlite:///data/newsfeed.db` |
 
-Convention : chaque table a `id` (autoincrement), `created_at` (UTC), `updated_at` (nullable).
+Convention : chaque table a `id` (autoincrement PK) et `created_at` (UTC).
+
+### Tables existantes
+
+| Table | Classe | Description |
+|-------|--------|-------------|
+| `news_items` | `NewsItem` | Nouvelles traitées par le pipeline |
+| `daily_feeds` | `DailyFeed` | Fil quotidien assemblé (liste d'IDs ordonnés) |
+| `feedbacks` | `Feedback` | Réactions utilisateur (`like`/`dislike`/`skip`) — alimente le scoring |
+| `news_comments` | `NewsComment` | Notes personnelles sur une nouvelle — **pas de lien avec le scoring** |
+| `bug_reports` | `BugReport` | Rapports de bugs soumis depuis l'interface |
+| `agent_runs` | `AgentRun` | Logs d'exécution des agents (durée, items collectés, erreurs) |
+
+### Détail des tables M6
+
+**`news_comments`** — note perso liée à un article
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| `id` | Integer PK | Identifiant |
+| `news_item_id` | Integer FK → `news_items.id` | Article commenté |
+| `body` | Text | Texte du commentaire (max 2000 car.) |
+| `created_at` | DateTime UTC | Date de saisie |
+
+**`bug_reports`** — rapport de bug depuis le menu ⋮
+
+| Colonne | Type | Description |
+|---------|------|-------------|
+| `id` | Integer PK | Identifiant |
+| `description` | Text | Description du problème (max 5000 car.) |
+| `context` | Text (JSON) | Contexte capturé auto : `article_id`, `article_title`, `user_agent`, `timestamp` |
+| `created_at` | DateTime UTC | Date de soumission |
 
 ---
 
