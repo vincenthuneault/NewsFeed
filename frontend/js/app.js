@@ -56,18 +56,15 @@ window.addEventListener("auth:expired", showLogin);
 
 // ── App ───────────────────────────────────────────────────────────
 
-let _appStarted = false;
-
 function startApp() {
   loadFeed("today");
 
-  // N'initialise l'UI qu'une seule fois — évite les doublons au re-login
-  if (_appStarted) return;
-  _appStarted = true;
+  // Vérification sur le DOM — le flag module se reset au rechargement de page,
+  // le DOM est la seule source de vérité fiable entre login/logout.
+  if (document.getElementById("btn-calendar")) return;
 
   setupProgressBar();
 
-  // Bouton calendrier dans #top-bar-actions (à côté du logout)
   const actions = document.getElementById("top-bar-actions");
   const calBtn = buildCalendarBtn((date) => {
     loadFeed(date);
