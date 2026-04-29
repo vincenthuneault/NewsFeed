@@ -14,6 +14,12 @@ secrets/
 data/
 logs/
 
+# Fichiers générés (images/audio du pipeline)
+static/images/*.jpg
+static/images/*.png
+static/images/*.jpeg
+static/audio/*.mp3
+
 # IDE
 .vscode/
 .idea/

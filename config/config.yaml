@@ -41,6 +41,8 @@ youtube:
 
 # --- RSS ---
 rss:
+  max_age_hours: 48
+  max_per_feed: 10
   feeds:
     tech_ai:
       - url: "https://feeds.arstechnica.com/arstechnica/technology-lab"
@@ -81,6 +83,11 @@ images:
 deduplication:
   fuzzy_threshold: 80  # Seuil rapidfuzz (0-100)
   max_duplicate_ratio: 0.30  # Alerte si > 30% doublons
+
+# --- Auth ---
+auth:
+  # Mot de passe dans secrets/.env → APP_PASSWORD
+  # Si absent, pas d'authentification (mode dev)
 
 # --- Serveur ---
 server:

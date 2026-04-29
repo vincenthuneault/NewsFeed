@@ -42,6 +42,9 @@ def load_config(
     if env_path.exists():
         load_dotenv(env_path)
 
+    # Résoudre les chemins de credentials relatifs par rapport à la racine du projet
+    _resolve_credential_paths(PROJECT_ROOT)
+
     # Charger config.yaml
     if not config_path.exists():
         raise FileNotFoundError(f"Config introuvable : {config_path}")
@@ -59,6 +62,21 @@ def load_config(
     _validate(config)
 
     return config
+
+
+def _resolve_credential_paths(project_root: Path) -> None:
+    """Résout les chemins de credentials relatifs en chemins absolus.
+
+    Permet d'écrire des chemins relatifs dans .env (ex: secrets/foo.json)
+    sans qu'ils se brisent lors d'un transfert de machine.
+    """
+    for var in ("GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_TTS_CREDENTIALS"):
+        value = os.getenv(var)
+        if value:
+            path = Path(value)
+            if not path.is_absolute():
+                resolved = (project_root / path).resolve()
+                os.environ[var] = str(resolved)
 
 
 def _inject_secrets(config: dict[str, Any]) -> dict[str, Any]:
