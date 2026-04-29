@@ -66,7 +66,8 @@ Sources (YouTube, RSS, scraping)
 | [[M3 — Feedback]] | Agents locaux + système de feedback | Terminé |
 | [[M4 — Frontend complet]] | UI mobile + auth + PWA | Terminé |
 | [[M5 — Production]] | Automatisation + monitoring 7 jours | Terminé |
-| [[M6 — Commentaires et bugs]] | Commentaires sur les nouvelles + rapport de bugs | En cours |
+| [[M6 — Commentaires et bugs]] | Commentaires sur les nouvelles + rapport de bugs | Terminé |
+| [[M7 — Feedback vocal]] | Transcription vocale en temps réel (micro → textarea) | En cours |
 
 ---
 
