@@ -56,18 +56,24 @@ window.addEventListener("auth:expired", showLogin);
 
 // ── App ───────────────────────────────────────────────────────────
 
+let _appStarted = false;
+
 function startApp() {
+  loadFeed("today");
+
+  // N'initialise l'UI qu'une seule fois — évite les doublons au re-login
+  if (_appStarted) return;
+  _appStarted = true;
+
   setupProgressBar();
 
-  // Bouton calendrier dans la barre du haut
-  const topBar = document.getElementById("top-bar");
+  // Bouton calendrier dans #top-bar-actions (à côté du logout)
+  const actions = document.getElementById("top-bar-actions");
   const calBtn = buildCalendarBtn((date) => {
     loadFeed(date);
     showToast(`Fil du ${date}`);
   });
-  topBar?.appendChild(calBtn);
-
-  loadFeed("today");
+  actions?.insertBefore(calBtn, actions.firstChild);
 }
 
 init();
