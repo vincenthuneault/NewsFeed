@@ -180,13 +180,21 @@ function _buildFeedbackPanel(item) {
 // ── Calendrier ────────────────────────────────────────────────────
 
 export function buildCalendarBtn(onDateSelected) {
+  // Nettoyer toute instance précédente avant de créer — idempotent
+  // même si du JS mis en cache appelle cette fonction plusieurs fois
+  document.getElementById("btn-calendar")?.remove();
+  document.querySelectorAll(".calendar-modal").forEach((m) => m.remove());
+
   const btn = document.createElement("button");
   btn.id = "btn-calendar";
   btn.className = "btn-calendar";
   btn.setAttribute("aria-label", "Historique");
   btn.textContent = "📅";
 
-  const modal = _buildCalendarModal(onDateSelected, btn);
+  const modal = document.createElement("div");
+  modal.id = "calendar-modal";
+  modal.className = "calendar-modal hidden";
+  modal.addEventListener("click", (e) => e.stopPropagation());
   document.body.appendChild(modal);
 
   btn.addEventListener("click", async (e) => {
@@ -195,6 +203,7 @@ export function buildCalendarBtn(onDateSelected) {
     modal.classList.toggle("hidden");
   });
 
+  // Un seul listener global suffit — on le nomme pour pouvoir le retirer si besoin
   document.addEventListener("click", () => modal.classList.add("hidden"), { passive: true });
   return btn;
 }

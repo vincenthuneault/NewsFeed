@@ -117,8 +117,19 @@ html, body {
 
 #top-bar-actions {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
   pointer-events: all;
+  align-items: center;
+  flex-shrink: 0;   /* ne se compresse jamais même avec overflow */
+}
+
+/* Séparateur visuel entre calendrier et logout */
+#btn-logout {
+  margin-left: 0.25rem;
+  border-left: 1px solid rgba(255,255,255,0.12);
+  padding-left: 0.5rem;
+  border-radius: 0;
+  background: transparent;
 }
 
 .btn-top {
