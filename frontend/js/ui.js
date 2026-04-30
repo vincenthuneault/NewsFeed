@@ -329,6 +329,7 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
 
     recorder = createVoiceRecorder({
       onTranscript: (text) => {
+        // Appelé une seule fois à la fin, avec la transcription complète
         const existing = textarea.value.trim();
         textarea.value = existing ? `${existing} ${text}` : text;
       },

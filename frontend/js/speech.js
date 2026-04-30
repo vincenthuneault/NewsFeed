@@ -31,6 +31,7 @@ export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLeve
   let _recording      = false;
   let _pending        = 0;
   let _doneResolve    = null;
+  let _transcript     = "";   // accumulé silencieusement, affiché en une fois à l'arrêt
 
   const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
     ? "audio/webm;codecs=opus"
@@ -110,12 +111,14 @@ export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLeve
       });
       if (res.ok) {
         const { transcript } = await res.json();
-        if (transcript) onTranscript(transcript);
+        if (transcript) _transcript = (_transcript + " " + transcript).trim();
       }
     } catch { } finally {
       _pending--;
       onPending?.(_pending > 0);
       if (_pending === 0 && !_recording) {
+        // Tout est terminé — on affiche la transcription complète en une fois
+        if (_transcript) onTranscript(_transcript);
         onDone?.();
         _doneResolve?.(); _doneResolve = null;
       }
@@ -131,8 +134,9 @@ export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLeve
     async start() {
       if (_recording || _pending > 0) return;
       try {
-        stream     = await navigator.mediaDevices.getUserMedia({ audio: true });
-        _recording = true;
+        stream      = await navigator.mediaDevices.getUserMedia({ audio: true });
+        _recording  = true;
+        _transcript = "";
         _startAnalyser();
         _startChunk();
       } catch (err) {
