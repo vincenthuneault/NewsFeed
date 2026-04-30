@@ -327,9 +327,12 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
     micBtn.textContent = "🎤";
 
     recorder = createVoiceRecorder({
-      onTranscript: (text) => { textarea.value = text; },
-      onStop: (text) => {
-        textarea.value = text;
+      onTranscript: (text) => {
+        // Appende le nouveau segment au texte déjà dans le textarea
+        const existing = textarea.value.trim();
+        textarea.value = existing ? `${existing} ${text}` : text;
+      },
+      onDone: () => {
         micBtn.classList.remove("btn-mic--recording");
         canvas.classList.add("hidden");
         ampHistory.length = 0;
@@ -343,11 +346,10 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
         showToast(msg, 4000);
         setTimeout(() => {
           micBtn.classList.remove("btn-mic--error");
-          micBtn.title = "Dicter";
+          micBtn.title = "Maintenir pour dicter";
         }, 4000);
       },
       onAudioLevel: (level) => {
-        // Synchronise la largeur canvas avec son conteneur au premier tick
         if (canvas.width !== canvas.offsetWidth && canvas.offsetWidth > 0) {
           canvas.width = canvas.offsetWidth;
         }
@@ -356,15 +358,23 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
       onPending: (active) => pending.classList.toggle("hidden", !active),
     });
 
-    micBtn.addEventListener("click", async () => {
-      if (recorder.isRecording) {
-        recorder.stop();
-      } else {
-        micBtn.classList.add("btn-mic--recording");
-        canvas.classList.remove("hidden");
-        await recorder.start();
-      }
+    micBtn.title = "Maintenir pour dicter";
+
+    const _stopMic = () => {
+      if (recorder.isRecording) recorder.stop();
+    };
+
+    micBtn.addEventListener("pointerdown", async (e) => {
+      e.preventDefault(); // évite le menu contextuel sur appui long mobile
+      if (recorder.isBusy) return;
+      micBtn.classList.add("btn-mic--recording");
+      canvas.classList.remove("hidden");
+      await recorder.start();
     });
+
+    micBtn.addEventListener("pointerup",     _stopMic);
+    micBtn.addEventListener("pointercancel", _stopMic);
+    micBtn.addEventListener("pointerleave",  _stopMic);
 
     btnRow.appendChild(micBtn);
   }
