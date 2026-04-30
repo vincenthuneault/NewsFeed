@@ -419,24 +419,13 @@ iframe.card__image { border: none; }
   display: block;
 }
 
-.voice-pending {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.74rem;
-  color: var(--text-muted);
-  font-style: italic;
-  padding: 0.1rem 0 0.2rem;
+.voice-status {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.2rem 0;
 }
-
-.voice-pending-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
-  animation: pulse-mic 0.8s ease-in-out infinite;
-}
+.voice-status--recording { color: #f87171; }
+.voice-status--pending   { color: var(--text-muted); font-style: italic; }
 
 .btn-mic {
   background: rgba(255,255,255,0.08);

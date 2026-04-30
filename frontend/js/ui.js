@@ -292,44 +292,43 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
   const ampHistory = [];
 
   function drawAmplitude(level) {
-    const W = canvas.width;
-    const H = canvas.height;
+    const W = canvas.width, H = canvas.height;
     const BAR = 3, GAP = 1, SLOT = BAR + GAP;
-    const maxBars = Math.floor(W / SLOT);
-
     ampHistory.push(level);
-    if (ampHistory.length > maxBars) ampHistory.shift();
-
+    if (ampHistory.length > Math.floor(W / SLOT)) ampHistory.shift();
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, W, H);
     ampHistory.forEach((v, i) => {
       const barH = Math.max(2, v * H * 0.9);
-      ctx.fillStyle = `rgba(79,142,247,${0.35 + v * 0.65})`;
+      ctx.fillStyle = `rgba(248,113,113,${0.35 + v * 0.65})`;
       ctx.fillRect(i * SLOT, (H - barH) / 2, BAR, barH);
     });
   }
 
-  // ── Indicateur d'attente API ──
-  const pending = document.createElement("div");
-  pending.className = "voice-pending hidden";
-  pending.innerHTML = `<span class="voice-pending-dot"></span>Transcription…`;
+  // ── Status (une seule ligne, texte change selon l'état) ──
+  const statusEl = document.createElement("div");
+  statusEl.className = "voice-status hidden";
+
+  function _setStatus(msg, type) {
+    if (!msg) { statusEl.classList.add("hidden"); return; }
+    statusEl.textContent = msg;
+    statusEl.className = `voice-status voice-status--${type}`;
+  }
 
   const btnRow = document.createElement("div");
   btnRow.className = "menu-textarea-actions";
 
-  // ── Bouton micro (seulement si MediaRecorder disponible) ──
+  // ── Bouton micro ──
   let recorder = null;
   if (voiceSupported) {
     const micBtn = document.createElement("button");
     micBtn.className = "btn-mic";
     micBtn.type = "button";
-    micBtn.title = "Dicter";
     micBtn.draggable = false;
     micBtn.innerHTML = `<span style="pointer-events:none">🎤</span>`;
 
     recorder = createVoiceRecorder({
       onTranscript: (text) => {
-        // Appende le nouveau segment au texte déjà dans le textarea
         const existing = textarea.value.trim();
         textarea.value = existing ? `${existing} ${text}` : text;
       },
@@ -337,39 +336,48 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
         micBtn.classList.remove("btn-mic--recording");
         canvas.classList.add("hidden");
         ampHistory.length = 0;
+        _setStatus(null);
       },
       onError: (msg) => {
         micBtn.classList.remove("btn-mic--recording");
         micBtn.classList.add("btn-mic--error");
-        micBtn.title = msg;
         canvas.classList.add("hidden");
         ampHistory.length = 0;
+        _setStatus(null);
         showToast(msg, 4000);
-        setTimeout(() => {
-          micBtn.classList.remove("btn-mic--error");
-          micBtn.title = "Appuyer pour dicter / re-appuyer pour arrêter";
-        }, 4000);
+        setTimeout(() => micBtn.classList.remove("btn-mic--error"), 4000);
       },
       onAudioLevel: (level) => {
-        if (canvas.width !== canvas.offsetWidth && canvas.offsetWidth > 0) {
+        if (canvas.width !== canvas.offsetWidth && canvas.offsetWidth > 0)
           canvas.width = canvas.offsetWidth;
-        }
         drawAmplitude(level);
       },
-      onPending: (active) => pending.classList.toggle("hidden", !active),
+      // onPending ne change pas le status pendant l'enregistrement
+      // (les chunks intermédiaires sont transparents pour l'utilisateur)
     });
-
-    micBtn.title = "Appuyer pour dicter / re-appuyer pour arrêter";
 
     micBtn.addEventListener("click", async () => {
       if (recorder.isRecording) {
-        recorder.stop();
+        // Arrêt → on envoie à Google
+        micBtn.classList.remove("btn-mic--recording");
+        canvas.classList.add("hidden");
+        ampHistory.length = 0;
+        _setStatus("⏳ Transcription…", "pending");
+        await recorder.stop();
         return;
       }
       if (recorder.isBusy) return;
       micBtn.classList.add("btn-mic--recording");
       canvas.classList.remove("hidden");
+      _setStatus("🔴 Enregistrement…", "recording");
       await recorder.start();
+      // Si start() a échoué (ex: permission refusée)
+      if (!recorder.isRecording) {
+        micBtn.classList.remove("btn-mic--recording");
+        canvas.classList.add("hidden");
+        ampHistory.length = 0;
+        _setStatus(null);
+      }
     });
 
     btnRow.appendChild(micBtn);
@@ -382,9 +390,11 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
   sendBtn.textContent = "Envoyer";
   sendBtn.addEventListener("click", async () => {
     sendBtn.disabled = true;
-    // Si un enregistrement est actif, on attend la fin de la transcription
-    if (recorder?.isRecording || recorder?.isBusy) {
-      sendBtn.textContent = "Attente…";
+    if (recorder?.isRecording) {
+      micBtn?.classList.remove("btn-mic--recording");
+      canvas?.classList.add("hidden");
+      ampHistory.length = 0;
+      _setStatus("⏳ Transcription…", "pending");
       await recorder.stop();
     }
     sendBtn.textContent = "Envoyer";
@@ -402,7 +412,7 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
   btnRow.appendChild(sendBtn);
   area.appendChild(textarea);
   area.appendChild(canvas);
-  area.appendChild(pending);
+  area.appendChild(statusEl);
   area.appendChild(btnRow);
 
   const toggle = _menuBtn(icon, label, () => area.classList.toggle("hidden"));
