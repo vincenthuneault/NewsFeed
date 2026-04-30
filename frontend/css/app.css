@@ -447,8 +447,11 @@ iframe.card__image { border: none; }
   font-size: 0.9rem;
   padding: 0.35rem 0.6rem;
   transition: background 0.15s;
-  touch-action: none;   /* évite scroll/zoom pendant l'appui long */
+  touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;   /* bloque le callout iOS/Android */
+  -webkit-tap-highlight-color: transparent;
 }
 .btn-mic:hover { background: rgba(255,255,255,0.14); }
 .btn-mic--recording {

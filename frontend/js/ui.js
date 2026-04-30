@@ -324,7 +324,8 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
     micBtn.className = "btn-mic";
     micBtn.type = "button";
     micBtn.title = "Dicter";
-    micBtn.textContent = "🎤";
+    micBtn.draggable = false;
+    micBtn.innerHTML = `<span style="pointer-events:none">🎤</span>`;
 
     recorder = createVoiceRecorder({
       onTranscript: (text) => {
@@ -384,13 +385,24 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
     micBtn.addEventListener("touchend",    _pressEnd,   { passive: false });
     micBtn.addEventListener("touchcancel", _pressEnd,   { passive: false });
 
+    // Empêche le scroll/drag pendant l'appui
+    micBtn.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+
     // Souris (desktop) — touchstart + preventDefault empêche ces events sur mobile
     micBtn.addEventListener("mousedown",  _pressStart);
     micBtn.addEventListener("mouseup",    _pressEnd);
     micBtn.addEventListener("mouseleave", _pressEnd);
 
-    // Empêche le menu contextuel sur appui long
+    // Bloque le menu contextuel (clic droit / appui long)
     micBtn.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Filet de sécurité : si touchcancel ne fire pas (menu contextuel Android),
+    // window touchend arrête quand même l'enregistrement
+    const _windowTouchEnd = (e) => {
+      if (recorder.isRecording) _pressEnd(e);
+    };
+    window.addEventListener("touchend", _windowTouchEnd, { passive: false });
+    window.addEventListener("touchcancel", _windowTouchEnd, { passive: false });
 
     btnRow.appendChild(micBtn);
   }
