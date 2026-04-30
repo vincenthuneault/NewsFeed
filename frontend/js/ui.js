@@ -14,11 +14,11 @@ _toast.className = "feedback-toast";
 document.body.appendChild(_toast);
 let _toastTimer = null;
 
-export function showToast(msg) {
+export function showToast(msg, duration = 2200) {
   _toast.textContent = msg;
   _toast.classList.add("show");
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => _toast.classList.remove("show"), 2200);
+  _toastTimer = setTimeout(() => _toast.classList.remove("show"), duration);
 }
 
 // ── Card (simple, sans bouton ⋮ par carte) ───────────────────────
@@ -335,10 +335,16 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
         ampHistory.length = 0;
       },
       onError: (msg) => {
-        showToast(msg);
         micBtn.classList.remove("btn-mic--recording");
+        micBtn.classList.add("btn-mic--error");
+        micBtn.title = msg;
         canvas.classList.add("hidden");
         ampHistory.length = 0;
+        showToast(msg, 4000);
+        setTimeout(() => {
+          micBtn.classList.remove("btn-mic--error");
+          micBtn.title = "Dicter";
+        }, 4000);
       },
       onAudioLevel: (level) => {
         // Synchronise la largeur canvas avec son conteneur au premier tick
