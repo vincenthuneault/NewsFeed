@@ -40,6 +40,14 @@ def _file_size_mb(path: Path) -> float:
     return round(path.stat().st_size / 1_048_576, 2)
 
 
+@health_bp.route("/version")
+def version():
+    """Retourne la version de l'application (sans accès DB)."""
+    config = current_app.config["PROJECT_CONFIG"]
+    v = config.get("app", {}).get("version", "1.0.0")
+    return jsonify({"version": v})
+
+
 @health_bp.route("/health")
 def health():
     """Rapport de santé : statut global, feed, agents, stockage, coûts."""

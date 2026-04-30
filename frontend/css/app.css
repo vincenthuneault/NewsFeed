@@ -477,6 +477,14 @@ iframe.card__image { border: none; }
 }
 .menu-cal-date:hover { color: var(--text); background: rgba(255,255,255,0.06); border-radius: 0.4rem; }
 
+.menu-version {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.2);
+  text-align: right;
+  padding: 0.3rem 0.85rem 0.2rem;
+  user-select: none;
+}
+
 .menu-cal-loading {
   font-size: 0.8rem;
   color: var(--text-muted);

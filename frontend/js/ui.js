@@ -3,7 +3,7 @@
  *          menu principal fixe ⋮ (feedback + calendrier + logout).
  */
 
-import { postFeedback, getFeedDates, postComment, postBugReport } from "./api.js";
+import { postFeedback, getFeedDates, postComment, postBugReport, getAppVersion } from "./api.js";
 import { voiceSupported, createVoiceRecorder } from "./speech.js";
 import { buildAudioBar } from "./player.js";
 
@@ -250,6 +250,13 @@ async function _renderMenu(menu, item, onDateSelected, onLogout) {
     menu.classList.add("hidden");
     onLogout();
   }));
+
+  // ── Version ──
+  const verEl = document.createElement("div");
+  verEl.className = "menu-version";
+  verEl.textContent = "…";
+  menu.appendChild(verEl);
+  getAppVersion().then((v) => { if (v) verEl.textContent = `v${v}`; });
 }
 
 function _menuBtn(icon, label, onClick) {

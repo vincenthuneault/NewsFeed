@@ -63,6 +63,16 @@ export async function postBugReport(description, context) {
   return res.json();
 }
 
+export async function getAppVersion() {
+  try {
+    const res = await fetch("/api/version");
+    const { version } = await res.json();
+    return version;
+  } catch {
+    return null;
+  }
+}
+
 export async function getAuthStatus() {
   const res = await fetch("/api/auth/status");
   return res.json();
