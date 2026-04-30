@@ -347,7 +347,7 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
         showToast(msg, 4000);
         setTimeout(() => {
           micBtn.classList.remove("btn-mic--error");
-          micBtn.title = "Maintenir pour dicter";
+          micBtn.title = "Appuyer pour dicter / re-appuyer pour arrêter";
         }, 4000);
       },
       onAudioLevel: (level) => {
@@ -359,50 +359,18 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
       onPending: (active) => pending.classList.toggle("hidden", !active),
     });
 
-    micBtn.title = "Maintenir pour dicter";
+    micBtn.title = "Appuyer pour dicter / re-appuyer pour arrêter";
 
-    let _stopRequested = false;
-
-    async function _pressStart(e) {
-      e.preventDefault();   // empêche menu contextuel + événements souris sur touch
-      e.stopPropagation();
+    micBtn.addEventListener("click", async () => {
+      if (recorder.isRecording) {
+        recorder.stop();
+        return;
+      }
       if (recorder.isBusy) return;
-      _stopRequested = false;
       micBtn.classList.add("btn-mic--recording");
       canvas.classList.remove("hidden");
       await recorder.start();
-      if (_stopRequested && recorder.isRecording) recorder.stop();
-    }
-
-    function _pressEnd(e) {
-      e?.preventDefault();
-      _stopRequested = true;
-      if (recorder.isRecording) recorder.stop();
-    }
-
-    // Touch (mobile / PWA)
-    micBtn.addEventListener("touchstart",  _pressStart, { passive: false });
-    micBtn.addEventListener("touchend",    _pressEnd,   { passive: false });
-    micBtn.addEventListener("touchcancel", _pressEnd,   { passive: false });
-
-    // Empêche le scroll/drag pendant l'appui
-    micBtn.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
-
-    // Souris (desktop) — touchstart + preventDefault empêche ces events sur mobile
-    micBtn.addEventListener("mousedown",  _pressStart);
-    micBtn.addEventListener("mouseup",    _pressEnd);
-    micBtn.addEventListener("mouseleave", _pressEnd);
-
-    // Bloque le menu contextuel (clic droit / appui long)
-    micBtn.addEventListener("contextmenu", (e) => e.preventDefault());
-
-    // Filet de sécurité : si touchcancel ne fire pas (menu contextuel Android),
-    // window touchend arrête quand même l'enregistrement
-    const _windowTouchEnd = (e) => {
-      if (recorder.isRecording) _pressEnd(e);
-    };
-    window.addEventListener("touchend", _windowTouchEnd, { passive: false });
-    window.addEventListener("touchcancel", _windowTouchEnd, { passive: false });
+    });
 
     btnRow.appendChild(micBtn);
   }
