@@ -16,8 +16,9 @@ google-api-python-client==2.159.0
 google-auth-oauthlib==1.2.1
 google-auth-httplib2==0.2.0
 
-# --- TTS (Google Cloud) ---
+# --- TTS + STT (Google Cloud) ---
 google-cloud-texttospeech==2.21.1
+google-cloud-speech==2.38.0
 
 # --- RSS ---
 feedparser==6.0.11

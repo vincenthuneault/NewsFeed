@@ -34,6 +34,7 @@ def create_app(config: dict | None = None) -> Flask:
     from backend.api.feedback import feedback_bp
     from backend.api.health import health_bp
     from backend.api.settings import settings_bp
+    from backend.api.speech import speech_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(bugs_bp, url_prefix="/api")
@@ -42,6 +43,7 @@ def create_app(config: dict | None = None) -> Flask:
     app.register_blueprint(feedback_bp, url_prefix="/api")
     app.register_blueprint(health_bp, url_prefix="/api")
     app.register_blueprint(settings_bp, url_prefix="/api")
+    app.register_blueprint(speech_bp, url_prefix="/api")
 
     frontend_dir = PROJECT_ROOT / "frontend"
 

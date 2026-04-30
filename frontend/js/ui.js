@@ -4,6 +4,7 @@
  */
 
 import { postFeedback, getFeedDates, postComment, postBugReport } from "./api.js";
+import { voiceSupported, createVoiceRecorder } from "./speech.js";
 import { buildAudioBar } from "./player.js";
 
 // ── Toast ─────────────────────────────────────────────────────────
@@ -277,10 +278,49 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
   textarea.placeholder = placeholder;
   textarea.rows = 3;
 
+  const btnRow = document.createElement("div");
+  btnRow.className = "menu-textarea-actions";
+
+  // ── Bouton micro (seulement si MediaRecorder disponible) ──
+  let recorder = null;
+  if (voiceSupported) {
+    const micBtn = document.createElement("button");
+    micBtn.className = "btn-mic";
+    micBtn.type = "button";
+    micBtn.title = "Dicter";
+    micBtn.textContent = "🎤";
+
+    recorder = createVoiceRecorder({
+      onTranscript: (text) => { textarea.value = text; },
+      onStop:       (text) => {
+        textarea.value = text;
+        micBtn.classList.remove("btn-mic--recording");
+      },
+      onError: (msg) => {
+        showToast(msg);
+        micBtn.classList.remove("btn-mic--recording");
+      },
+    });
+
+    micBtn.addEventListener("click", async () => {
+      if (recorder.isRecording) {
+        recorder.stop();
+      } else {
+        micBtn.classList.add("btn-mic--recording");
+        await recorder.start();
+      }
+    });
+
+    btnRow.appendChild(micBtn);
+  }
+
+  // ── Bouton Envoyer ──
   const sendBtn = document.createElement("button");
   sendBtn.className = "menu-send-btn";
+  sendBtn.type = "button";
   sendBtn.textContent = "Envoyer";
   sendBtn.addEventListener("click", async () => {
+    recorder?.stop();
     const text = textarea.value.trim();
     if (!text) return;
     sendBtn.disabled = true;
@@ -293,8 +333,9 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
     }
   });
 
+  btnRow.appendChild(sendBtn);
   area.appendChild(textarea);
-  area.appendChild(sendBtn);
+  area.appendChild(btnRow);
 
   const toggle = _menuBtn(icon, label, () => area.classList.toggle("hidden"));
   section.appendChild(toggle);

@@ -372,6 +372,13 @@ iframe.card__image { border: none; }
   gap: 0.5rem;
 }
 
+.menu-textarea-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .menu-textarea {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
@@ -403,6 +410,28 @@ iframe.card__image { border: none; }
 }
 .menu-send-btn:hover { background: #3a7ce0; }
 .menu-send-btn:disabled { background: #555; cursor: not-allowed; }
+
+.btn-mic {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 0.5rem;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.6rem;
+  transition: background 0.15s;
+}
+.btn-mic:hover { background: rgba(255,255,255,0.14); }
+.btn-mic--recording {
+  background: rgba(239,68,68,0.2);
+  border-color: rgba(239,68,68,0.5);
+  color: #f87171;
+  animation: pulse-mic 1.2s ease-in-out infinite;
+}
+@keyframes pulse-mic {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
 
 /* Calendrier inline dans le menu */
 .menu-cal-section { display: flex; flex-direction: column; }
