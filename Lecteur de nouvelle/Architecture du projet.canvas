@@ -15,7 +15,9 @@
 		{"id":"m3","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M3 — Feedback.md","x":50,"y":550,"width":260,"height":140,"color":"2"},
 		{"id":"m4","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M4 — Frontend complet.md","x":400,"y":550,"width":260,"height":140,"color":"2"},
 		{"id":"m5","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M5 — Production.md","x":750,"y":550,"width":260,"height":140,"color":"2"},
-		{"id":"label-milestones","type":"text","text":"# Milestones\n\nChaque gate valide TOUT ce qui précède.\nPas de raccourci.","x":1100,"y":550,"width":280,"height":140,"color":"2"},
+		{"id":"m6","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M6 — Commentaires et bugs.md","x":1100,"y":550,"width":260,"height":140,"color":"2"},
+		{"id":"m7","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M7 — Feedback vocal.md","x":1450,"y":550,"width":260,"height":140,"color":"2"},
+		{"id":"label-milestones","type":"text","text":"# Milestones\n\nChaque gate valide TOUT ce qui précède.\nPas de raccourci.","x":1800,"y":550,"width":280,"height":140,"color":"2"},
 		{"id":"label-flow","type":"text","text":"# Flow de données\n\nSources → Agents → Pipeline → DB → API → Frontend\n\nChaque flèche = un contrat de données clair","x":-490,"y":-560,"width":380,"height":160,"color":"3"}
 	],
 	"edges":[
@@ -36,8 +38,13 @@
 		{"id":"e-m2-m3","fromNode":"m2","fromSide":"right","toNode":"m3","toSide":"left","color":"2","label":"Gate 2"},
 		{"id":"e-m3-m4","fromNode":"m3","fromSide":"right","toNode":"m4","toSide":"left","color":"2","label":"Gate 3"},
 		{"id":"e-m4-m5","fromNode":"m4","fromSide":"right","toNode":"m5","toSide":"left","color":"2","label":"Gate 4"},
+		{"id":"e-m5-m6","fromNode":"m5","fromSide":"right","toNode":"m6","toSide":"left","color":"2","label":"Gate 5"},
+		{"id":"e-m6-m7","fromNode":"m6","fromSide":"right","toNode":"m7","toSide":"left","color":"2","label":"Gate 6"},
 		{"id":"e-m1-agents","fromNode":"m1","fromSide":"top","toNode":"agents","toSide":"bottom"},
 		{"id":"e-m4-frontend","fromNode":"m4","fromSide":"top","toNode":"frontend","toSide":"bottom"},
-		{"id":"e-m5-infra","fromNode":"m5","fromSide":"top","toNode":"infra","toSide":"bottom"}
+		{"id":"e-m5-infra","fromNode":"m5","fromSide":"top","toNode":"infra","toSide":"bottom"},
+		{"id":"e-m6-api","fromNode":"m6","fromSide":"top","toNode":"api","toSide":"bottom"},
+		{"id":"e-m6-donnees","fromNode":"m6","fromSide":"top","toNode":"donnees","toSide":"bottom"},
+		{"id":"e-m7-frontend","fromNode":"m7","fromSide":"top","toNode":"frontend","toSide":"bottom"}
 	]
 }

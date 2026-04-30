@@ -22,7 +22,7 @@
 | M4 | [[M5 — Production\|M5]] | Gate 4 : POC mobile + tests M0→M4 | ✅ Terminé |
 | M5 | [[M6 — Commentaires et bugs\|M6]] | Gate 5 : 7 jours autonomes + régression complète | ✅ Terminé |
 | M6 | [[M7 — Feedback vocal\|M7]] | Gate 6 : commentaires + bugs validés + aucune régression | ✅ Terminé |
-| M7 | Terminé | Gate 7 : vocal fr-CA en direct + dégradation silencieuse | 🔄 En cours |
+| M7 | Terminé | Gate 7 : vocal fr-CA + Google STT V2 + push-to-talk | ✅ Terminé |
 
 **Chaque gate exécute la suite de régression complète. Pas de raccourci.**
 

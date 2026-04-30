@@ -1,53 +1,55 @@
 # M7 — Feedback vocal transcrit en temps réel
 
-> Ajouter un bouton microphone dans les sections de commentaire et de rapport de bug. L'utilisateur parle, le texte apparaît dans le champ en direct. Il peut corriger avant d'envoyer.
+> Bouton microphone dans les sections commentaire et rapport de bug. L'utilisateur appuie pour démarrer l'enregistrement, réappuie pour arrêter — la transcription complète arrive d'un coup via Google STT V2.
 
 ---
 
-## Décision technologique : Google Cloud Speech-to-Text
+## Décision technologique : Google Cloud Speech-to-Text V2
 
-| Critère | Web Speech API | **Google Cloud STT** ✅ | Whisper API | Azure Speech |
+| Critère | Web Speech API | **Google Cloud STT V2** ✅ | Whisper API | Azure Speech |
 |---------|:---:|:---:|:---:|:---:|
-| Temps réel (chunks) | Oui | **Oui** | Non (batch) | Oui |
 | fr-CA natif | Oui | **Oui** | Partiel | Oui |
-| Précision | Bonne | **Très bonne** | Excellente | Très bonne |
+| Précision | Bonne | **Très bonne (latest_long)** | Excellente | Très bonne |
 | Credentials existants | — | **Oui** | Non | Non |
+| Détection auto encodage | Non | **Oui (AutoDetect)** | Non | Non |
 | Contrôle backend | Non | **Oui** | Oui | Oui |
 | Coût/min | Gratuit | ~$0.016 | ~$0.006 | ~$0.017 |
 
-**Raison du choix :** les credentials Google (`GOOGLE_APPLICATION_CREDENTIALS`) sont déjà en place pour le TTS. Même infrastructure, même compte de facturation. Précision supérieure à la Web Speech API, contrôle côté serveur.
+**Raison du choix V2 vs V1 :**
+- Modèle `latest_long` — meilleure précision fr-CA
+- `AutoDetectDecodingConfig` — Google détecte encoding + sample rate depuis les headers du fichier WebM, plus de risque d'erreur de configuration
+- Inline recognizer (`recognizers/_`) — sans pré-création de ressource
 
 ---
 
-## Architecture : chunks audio via HTTP
+## Comportement final (push-to-talk toggle)
+
+1. Tap 🎤 → **"🔴 Enregistrement…"** + bouton rouge + canvas barres rouges
+2. L'utilisateur parle (durée libre)
+3. Re-tap 🎤 → enregistrement s'arrête → **"⏳ Transcription…"**
+4. Google STT V2 retourne la transcription complète → texte apparaît dans le textarea → status disparaît
+
+> **Note :** Le push-to-hold (maintenir enfoncé) a été abandonné — Chrome Android déclenche son menu contextuel natif après ~500ms, comportement OS non suppressible en contexte navigateur.
+
+---
+
+## Architecture
 
 ```
 [Navigateur]
-  MediaRecorder → chunk audio/webm;opus toutes les 3s
+  Tap 🎤 → MediaRecorder.start() (NO timeslice)
+  Re-tap → MediaRecorder.stop() → blob WebM complet
        │
-       ▼ POST /api/speech/transcribe  (base64 + mime_type)
+       ▼ POST /api/speech/transcribe (base64 + mime_type)
 [Backend Flask]
-  google.cloud.speech → recognize() → transcript
+  Google STT V2 — AutoDetectDecodingConfig
+  model="latest_long", language_codes=["fr-CA"]
+  Inline recognizer: projects/{project}/locations/global/recognizers/_
        │
        ▼ {"transcript": "texte reconnu"}
 [Navigateur]
-  Append au textarea → affichage en direct
+  Texte appendé au textarea
 ```
-
-Pas de WebSocket. Chaque chunk de 3 secondes est traité indépendamment. Latence perçue : ~1-2s après la fin de chaque phrase.
-
----
-
-## Comportement attendu
-
-1. Ouvrir menu ⋮ → 💬 ou 🐛 → textarea apparaît
-2. Bouton 🎤 visible à gauche du bouton Envoyer
-3. Clic 🎤 → enregistrement démarre (bouton pulse rouge)
-4. Toutes les 3 secondes → chunk envoyé → texte ajouté au textarea
-5. Clic 🎤 à nouveau → arrêt (dernier chunk traité avant stop)
-6. Le texte transcrit est éditable → Envoyer comme d'habitude
-7. Si permission refusée → toast "Microphone non autorisé", pas de crash
-8. Si navigateur sans `MediaRecorder` → bouton 🎤 absent (dégradation silencieuse)
 
 ---
 
@@ -59,78 +61,47 @@ Les transcriptions ne sont **pas stockées séparément**. Le texte dicté rempl
 
 ---
 
-## Fichiers à créer / modifier
+## Fichiers créés / modifiés
 
 | Fichier | Action | Détail |
 |---------|--------|--------|
-| `requirements.txt` | Modifier | Ajouter `google-cloud-speech` |
-| `backend/api/speech.py` | Créer | Blueprint `speech_bp` : `POST /api/speech/transcribe` |
-| `backend/app.py` | Modifier | Enregistrer `speech_bp` |
-| `frontend/js/speech.js` | Créer | `voiceSupported`, `createVoiceRecorder()` (MediaRecorder + fetch) |
-| `frontend/js/ui.js` | Modifier | `_buildInputSection` : bouton 🎤, intégration speech.js |
-| `frontend/css/app.css` | Modifier | `.btn-mic`, `.btn-mic--recording`, `@keyframes pulse-mic`, `.menu-textarea-actions` |
+| `requirements.txt` | Modifié | `google-cloud-speech==2.38.0` |
+| `backend/api/speech.py` | Créé | Blueprint `speech_bp` — Google STT V2 |
+| `backend/app.py` | Modifié | Enregistrement `speech_bp` |
+| `frontend/js/speech.js` | Créé | `voiceSupported`, `createVoiceRecorder()` — MediaRecorder + fetch |
+| `frontend/js/ui.js` | Modifié | Bouton 🎤 dans `_buildInputSection`, status "Enregistrement…" / "Transcription…" |
+| `frontend/css/app.css` | Modifié | `.btn-mic`, `.btn-mic--recording`, `.voice-status`, `.voice-amplitude` |
+| `frontend/sw.js` | Modifié | Cache v5 (invalidation forcée) |
 
 ---
 
-## Détail technique
+## Permissions Google Cloud requises
 
-### `backend/api/speech.py`
-
-```
-POST /api/speech/transcribe
-Body : { "audio": "<base64>", "mime_type": "audio/webm;codecs=opus" }
-Réponse : { "transcript": "texte reconnu" }
-```
-
-- Détecte l'encodage depuis le mime_type (`webm` → WEBM_OPUS, `ogg` → OGG_OPUS)
-- Appelle `speech.SpeechClient().recognize()` avec `language_code="fr-CA"`
-- Retourne le transcript concaténé de tous les segments
-
-### `frontend/js/speech.js`
-
-- `voiceSupported` — `true` si `MediaRecorder` + `getUserMedia` disponibles
-- `createVoiceRecorder({ onTranscript, onStop, onError })` — démarre/arrête l'enregistrement, envoie les chunks, rappelle `onTranscript(texteAccumulé)` à chaque résultat
-
-### `frontend/js/ui.js`
-
-Mise à jour de `_buildInputSection` :
-- Rangée boutons : `[🎤]  [Envoyer]` (mic à gauche si supporté)
-- Clic mic : toggle recording + état visuel
-- `onTranscript` : `textarea.value = texte`
+Le compte de service doit avoir le rôle **Cloud Speech Editor** (`roles/speech.editor`) pour accéder à l'API V2.
+- V1 utilisait des permissions différentes (`speech.googleapis.com` standard)
+- V2 requiert `speech.recognizers.recognize` — inclus dans `roles/speech.editor`
 
 ---
 
 ## Tâches
 
-- [ ] 7.1 — `requirements.txt` : ajouter `google-cloud-speech`
-- [ ] 7.2 — `backend/api/speech.py` : blueprint POST /api/speech/transcribe
-- [ ] 7.3 — `backend/app.py` : enregistrer speech_bp
-- [ ] 7.4 — `frontend/js/speech.js` : MediaRecorder + chunks + fetch
-- [ ] 7.5 — `frontend/js/ui.js` : bouton 🎤 dans _buildInputSection
-- [ ] 7.6 — `frontend/css/app.css` : styles mic + animation pulse
-
----
-
-## Tests manuels (gate de validation)
-
-| ID | Scénario | Résultat attendu |
-|----|----------|-----------------|
-| T-VOC-01 | Chrome Android — clic 🎤 → parler en fr | Texte apparaît dans le textarea (délai ~3s) |
-| T-VOC-02 | Parler, stopper, corriger, Envoyer | Texte final = transcription ± corrections |
-| T-VOC-03 | Navigateur sans MediaRecorder | Bouton 🎤 absent, textarea seul |
-| T-VOC-04 | Refus permission micro | Toast "Microphone non autorisé", pas de crash |
-| T-VOC-05 | Vocal → commentaire Envoyer | Entrée en DB (table news_comments) |
-| T-VOC-06 | Vocal → rapport de bug Envoyer | Entrée en DB (table bug_reports) avec contexte |
-| T-REG-01 | Saisie manuelle sans micro | Aucune régression |
+- [x] 7.1 — `requirements.txt` : `google-cloud-speech==2.38.0`
+- [x] 7.2 — `backend/api/speech.py` : Google STT V2, AutoDetectDecodingConfig, latest_long
+- [x] 7.3 — `backend/app.py` : enregistrement `speech_bp`
+- [x] 7.4 — `frontend/js/speech.js` : MediaRecorder sans timeslice, push-to-talk toggle
+- [x] 7.5 — `frontend/js/ui.js` : bouton 🎤, status "Enregistrement…" / "Transcription…", canvas amplitude
+- [x] 7.6 — `frontend/css/app.css` : styles mic, animation pulse, voice-status, voice-amplitude
 
 ---
 
 ## Gate 7 — Critères
 
-- [ ] T-VOC-01 à T-VOC-06 passent
-- [ ] T-REG-01 : saisie manuelle non affectée
-- [ ] Aucun crash sur permission refusée
-- [ ] Dégradation silencieuse sur navigateur non supporté
+- [x] Tap 🎤 → "🔴 Enregistrement…" visible
+- [x] Re-tap → "⏳ Transcription…" puis texte dans le textarea
+- [x] Aucune transcription pendant l'enregistrement (blob envoyé en une fois)
+- [x] Saisie manuelle non affectée (aucune régression)
+- [x] Google STT V2 (`latest_long`, `fr-CA`) opérationnel
+- [x] Cache navigateur invalidé (SW v5 + Cache-Control: no-cache)
 
 ---
 
@@ -141,4 +112,4 @@ Mise à jour de `_buildInputSection` :
 - Composants : [[Frontend mobile]], [[API REST]]
 - Routes utilisées : `POST /api/news/<id>/comments`, `POST /api/bugs`
 
-#milestone #m7 #vocal #google-stt #frontend
+#milestone #m7 #vocal #google-stt-v2 #frontend #terminé

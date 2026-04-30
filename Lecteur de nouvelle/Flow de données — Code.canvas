@@ -50,7 +50,14 @@
 		{"id":"js-player","type":"text","text":"### js/player.js\nYouTube IFrame API\nHTML5 <audio> TTS\nAuto-play/stop au scroll","x":3318,"y":257,"width":250,"height":140},
 		{"id":"src-trends","type":"text","text":"## Google Trends + YT Shorts\n\nContenu viral\nTendances du moment","x":-2520,"y":715,"width":390,"height":110,"color":"1"},
 		{"id":"src-scraping","type":"text","text":"## Sites web (scraping)\n\nÉvénements Montréal\nAvis municipaux Contrecoeur\nbeautifulsoup4 + requests","x":-2520,"y":530,"width":390,"height":153,"color":"1"},
-		{"id":"src-rss","type":"text","text":"## Feeds RSS/Atom\n\nTech/IA, politique (CA, QC, intl),\nvéhicules, spatial\nHTTP GET → XML → feedparser","x":-2520,"y":360,"width":390,"height":150,"color":"1"}
+		{"id":"src-rss","type":"text","text":"## Feeds RSS/Atom\n\nTech/IA, politique (CA, QC, intl),\nvéhicules, spatial\nHTTP GET → XML → feedparser","x":-2520,"y":360,"width":390,"height":150,"color":"1"},
+		{"id":"group-m6m7","type":"group","x":2060,"y":1320,"width":1840,"height":580,"label":"M6+M7 — INTERACTIONS UTILISATEUR (commentaires, bugs, vocal)"},
+		{"id":"api-comments","type":"text","text":"### api/comments.py\n\n`POST /api/news/{id}/comments`\n`GET  /api/news/{id}/comments`\nNote perso liée à un article\n→ table `news_comments`","x":2080,"y":1380,"width":290,"height":200},
+		{"id":"api-bugs","type":"text","text":"### api/bugs.py\n\n`POST /api/bugs`\nRapport de bug avec contexte JSON\n(article actif, user agent, timestamp)\n→ table `bug_reports`","x":2400,"y":1380,"width":290,"height":200},
+		{"id":"api-speech","type":"text","text":"### api/speech.py\n\n`POST /api/speech/transcribe`\nBase64 audio → Google STT V2\nAutoDetectDecodingConfig\nmodèle `latest_long`, fr-CA\n→ {transcript: \"...\"}","x":2720,"y":1380,"width":310,"height":230},
+		{"id":"google-stt-v2","type":"text","text":"## Google Cloud STT V2\n\nAPI : speech.googleapis.com\nVersion : V2 (latest_long)\nLangue : fr-CA\nEncodage : auto-détecté\nRôle IAM requis :\nroles/speech.editor","x":3080,"y":1380,"width":310,"height":230,"color":"1"},
+		{"id":"js-speech","type":"text","text":"### js/speech.js\n\n`createVoiceRecorder()`\nMediaRecorder (no timeslice)\nPush-to-talk toggle\nBlob complet → POST /api/speech\nAmplitude via AnalyserNode","x":2400,"y":1630,"width":310,"height":230},
+		{"id":"js-ui-m6m7","type":"text","text":"### js/ui.js (M6+M7)\n\n`_buildInputSection()`\nTextarea + bouton 🎤\nStatus : 🔴 Enregistrement…\nStatus : ⏳ Transcription…\nCanvas barres amplitude","x":2080,"y":1630,"width":290,"height":230}
 	],
 	"edges":[
 		{"id":"e-yaml-config","fromNode":"config-yaml","fromSide":"right","toNode":"core-config","toSide":"left","label":"YAML → dict"},
@@ -91,6 +98,14 @@
 		{"id":"e-orch-health","fromNode":"orchestrator","fromSide":"right","toNode":"health-report","toSide":"left","color":"6","label":"AgentReport[]"},
 		{"id":"e-assembler-health","fromNode":"feed-assembler","fromSide":"right","toNode":"health-report","toSide":"left","color":"6","label":"PipelineReport"},
 		{"id":"e-health-apihealth","fromNode":"health-report","fromSide":"right","toNode":"api-health","toSide":"bottom","color":"6","label":"JSON rapport"},
-		{"id":"e-contract-dedup","fromNode":"data-contract","fromSide":"right","toNode":"dedup","toSide":"left","color":"6","label":"contrat de données"}
+		{"id":"e-contract-dedup","fromNode":"data-contract","fromSide":"right","toNode":"dedup","toSide":"left","color":"6","label":"contrat de données"},
+		{"id":"e-jsui-comments","fromNode":"js-ui-m6m7","fromSide":"right","toNode":"api-comments","toSide":"left","color":"2","label":"POST commentaire"},
+		{"id":"e-jsui-bugs","fromNode":"js-ui-m6m7","fromSide":"right","toNode":"api-bugs","toSide":"bottom","color":"2","label":"POST bug"},
+		{"id":"e-jsspeech-apisp","fromNode":"js-speech","fromSide":"right","toNode":"api-speech","toSide":"bottom","color":"1","label":"base64 audio"},
+		{"id":"e-apisp-googlestt","fromNode":"api-speech","fromSide":"right","toNode":"google-stt-v2","toSide":"left","color":"1","label":"audio bytes → transcript"},
+		{"id":"e-jsui-jsspeech","fromNode":"js-ui-m6m7","fromSide":"bottom","toNode":"js-speech","toSide":"top","label":"callbacks"},
+		{"id":"e-comments-sqlite","fromNode":"api-comments","fromSide":"top","toNode":"sqlite","toSide":"bottom","color":"5","label":"news_comments"},
+		{"id":"e-bugs-sqlite","fromNode":"api-bugs","fromSide":"top","toNode":"sqlite","toSide":"bottom","color":"5","label":"bug_reports"},
+		{"id":"e-jsui-parent","fromNode":"js-ui","fromSide":"bottom","toNode":"js-ui-m6m7","toSide":"top","label":"étend ui.js"}
 	]
 }

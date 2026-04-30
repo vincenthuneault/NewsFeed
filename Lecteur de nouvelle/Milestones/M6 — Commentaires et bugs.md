@@ -193,15 +193,15 @@ Voir [[Modèle de données]] pour le schéma complet des colonnes.
 
 ## Tâches
 
-- [ ] 6.1 — `NewsComment` dans `core/models.py` + relation `NewsItem.comments`
-- [ ] 6.2 — `BugReport` dans `core/models.py`
-- [ ] 6.3 — `backend/api/comments.py` — blueprint POST + GET
-- [ ] 6.4 — `backend/api/bugs.py` — blueprint POST
-- [ ] 6.5 — `backend/app.py` — enregistrement des deux blueprints
-- [ ] 6.6 — `api.js` — `postComment()` et `postBugReport()`
-- [ ] 6.7 — `ui.js` — textarea inline commentaire dans le menu ⋮
-- [ ] 6.8 — `ui.js` — textarea inline rapport de bug dans le menu ⋮
-- [ ] 6.9 — `app.css` — styles textarea menu
+- [x] 6.1 — `NewsComment` dans `core/models.py` + relation `NewsItem.comments`
+- [x] 6.2 — `BugReport` dans `core/models.py`
+- [x] 6.3 — `backend/api/comments.py` — blueprint POST + GET
+- [x] 6.4 — `backend/api/bugs.py` — blueprint POST
+- [x] 6.5 — `backend/app.py` — enregistrement des deux blueprints
+- [x] 6.6 — `api.js` — `postComment()` et `postBugReport()`
+- [x] 6.7 — `ui.js` — textarea inline commentaire dans le menu ⋮
+- [x] 6.8 — `ui.js` — textarea inline rapport de bug dans le menu ⋮
+- [x] 6.9 — `app.css` — styles textarea menu
 
 ---
 
@@ -224,11 +224,11 @@ Voir [[Modèle de données]] pour le schéma complet des colonnes.
 
 ## Gate 6 — Critères
 
-- [ ] Tests T-COM-01 à T-COM-04 passent
-- [ ] Tests T-BUG-01 à T-BUG-04 passent
-- [ ] Aucune régression (T-REG-01, T-REG-02)
-- [ ] Les deux tables créées automatiquement par `init_db()`
-- [ ] Textarea respecte `overflow: hidden` sur body (pas de scrollbar parasite)
+- [x] Tests T-COM-01 à T-COM-04 passent
+- [x] Tests T-BUG-01 à T-BUG-04 passent
+- [x] Aucune régression (T-REG-01, T-REG-02)
+- [x] Les deux tables créées automatiquement par `init_db()`
+- [x] Textarea respecte `overflow: hidden` sur body (pas de scrollbar parasite)
 
 ---
 
