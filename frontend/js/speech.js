@@ -19,13 +19,14 @@ export const voiceSupported = !!(
 );
 
 export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLevel, onPending }) {
-  let stream      = null;
-  let audioCtx    = null;
-  let rafId       = null;
-  let recorder    = null;
-  let chunks      = [];
-  let _recording  = false;
-  let _busy       = false;   // true pendant l'appel API (bloque un nouveau start)
+  let stream        = null;
+  let audioCtx      = null;
+  let rafId         = null;
+  let recorder      = null;
+  let chunks        = [];
+  let _recording    = false;
+  let _busy         = false;   // true pendant l'appel API (bloque un nouveau start)
+  let _doneResolve  = null;    // résout la Promise retournée par stop()
 
   const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
     ? "audio/webm;codecs=opus"
@@ -79,6 +80,8 @@ export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLeve
       _busy = false;
       onPending?.(false);
       onDone?.();
+      _doneResolve?.();
+      _doneResolve = null;
     }
   }
 
@@ -119,8 +122,11 @@ export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLeve
     },
 
     stop() {
-      if (!_recording || !recorder) return;
-      recorder.stop();
+      if (!_recording || !recorder) return Promise.resolve();
+      return new Promise((resolve) => {
+        _doneResolve = resolve;
+        recorder.stop();
+      });
     },
   };
 }

@@ -381,10 +381,15 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
   sendBtn.type = "button";
   sendBtn.textContent = "Envoyer";
   sendBtn.addEventListener("click", async () => {
-    recorder?.stop();
-    const text = textarea.value.trim();
-    if (!text) return;
     sendBtn.disabled = true;
+    // Si un enregistrement est actif, on attend la fin de la transcription
+    if (recorder?.isRecording || recorder?.isBusy) {
+      sendBtn.textContent = "Attente…";
+      await recorder.stop();
+    }
+    sendBtn.textContent = "Envoyer";
+    const text = textarea.value.trim();
+    if (!text) { sendBtn.disabled = false; return; }
     try {
       await onSend(text);
     } catch {
