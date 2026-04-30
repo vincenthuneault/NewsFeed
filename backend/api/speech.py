@@ -1,4 +1,4 @@
-"""Route POST /api/speech/transcribe — Google Cloud Speech-to-Text fr-CA."""
+"""Route POST /api/speech/transcribe — Google Cloud Speech-to-Text V1."""
 
 from __future__ import annotations
 
@@ -25,12 +25,12 @@ def _detect_encoding(mime_type: str):
 
 @speech_bp.route("/speech/transcribe", methods=["POST"])
 def transcribe():
-    """Transcrit un chunk audio en texte fr-CA.
+    """Transcrit un enregistrement audio en texte fr-CA (Google STT V1).
 
     Body JSON : {"audio": "<base64>", "mime_type": "audio/webm;codecs=opus"}
     Réponse   : {"transcript": "texte reconnu"}
     """
-    data = request.get_json(silent=True) or {}
+    data      = request.get_json(silent=True) or {}
     audio_b64 = data.get("audio", "")
     mime_type  = data.get("mime_type", "")
 
@@ -43,19 +43,20 @@ def transcribe():
 
     try:
         audio_bytes = base64.b64decode(audio_b64)
-        client = speech.SpeechClient()
-        audio  = speech.RecognitionAudio(content=audio_bytes)
-        config = speech.RecognitionConfig(
+        client   = speech.SpeechClient()
+        audio    = speech.RecognitionAudio(content=audio_bytes)
+        config   = speech.RecognitionConfig(
             encoding=encoding,
             sample_rate_hertz=48000,
             language_code="fr-CA",
         )
-        response = client.recognize(config=config, audio=audio)
+        response   = client.recognize(config=config, audio=audio)
         transcript = " ".join(
             r.alternatives[0].transcript
             for r in response.results
             if r.alternatives
         )
         return jsonify({"transcript": transcript})
+
     except Exception as exc:
         return jsonify({"error": True, "message": str(exc), "code": "SERVER_ERROR"}), 500
