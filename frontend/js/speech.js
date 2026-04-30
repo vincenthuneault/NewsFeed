@@ -1,146 +1,111 @@
 /**
- * speech.js — Push-to-talk avec auto-découpe toutes les 55s.
- *
- * Google STT synchrone accepte max 60s. On découpe en segments de 55s :
- * chaque segment est un nouveau MediaRecorder (blob complet avec headers)
- * envoyé indépendamment pendant que l'enregistrement continue.
- *
- * Callbacks :
- *   onTranscript(text)  — nouveau texte (à appender au textarea)
- *   onDone()            — tout terminé (transcriptions + enregistrement)
- *   onError(msg)        — erreur micro
- *   onAudioLevel(0..1)  — amplitude pendant l'enregistrement
- *   onPending(bool)     — true quand un chunk est en transit vers Google
+ * speech.js — Version minimale : start → enregistre → stop → envoie UNE FOIS.
+ * Aucun timer, aucun chunk automatique, aucune logique de découpe.
  */
+
+console.log("[speech.js] v1.7.10 chargé — aucun timer, aucun chunk automatique");
 
 export const voiceSupported = !!(
   navigator.mediaDevices?.getUserMedia &&
   window.MediaRecorder
 );
 
-const CHUNK_MS  = 55_000;  // 55s — sous la limite de 60s de Google STT
-const MIN_BYTES = 500;
-
 export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLevel, onPending }) {
-  let stream          = null;
-  let audioCtx        = null;
-  let rafId           = null;
-  let currentRecorder = null;
-  let segmentChunks   = [];
-  let chunkTimer      = null;
-  let _recording      = false;
-  let _pending        = 0;
-  let _doneResolve    = null;
-  let _transcript     = "";   // accumulé silencieusement, affiché en une fois à l'arrêt
+  let stream   = null;
+  let recorder = null;
+  let chunks   = [];
+  let ctx      = null;
+  let rafId    = null;
+  let _resolve = null;
+  let _active  = false;
 
-  const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+  const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
     ? "audio/webm;codecs=opus"
     : "audio/ogg;codecs=opus";
 
-  // ── Chunk ─────────────────────────────────────────────────────────
-
-  function _startChunk() {
-    segmentChunks   = [];
-    currentRecorder = new MediaRecorder(stream, { mimeType });
-
-    currentRecorder.addEventListener("dataavailable", (e) => {
-      if (e.data.size > 0) segmentChunks.push(e.data);
-    });
-
-    currentRecorder.addEventListener("stop", () => {
-      clearTimeout(chunkTimer);
-      const blob = new Blob(segmentChunks, { type: mimeType });
-
-      if (!_recording) stream?.getTracks().forEach((t) => t.stop());
-
-      if (blob.size >= MIN_BYTES) {
-        _sendChunk(blob);
-      } else if (!_recording && _pending === 0) {
-        onDone?.();
-        _doneResolve?.(); _doneResolve = null;
-      }
-
-      if (_recording) _startChunk();
-    });
-
-    currentRecorder.start();
-
-    chunkTimer = setTimeout(() => {
-      if (_recording && currentRecorder?.state === "recording") {
-        currentRecorder.stop();
-      }
-    }, CHUNK_MS);
-  }
-
-  // ── Analyser ──────────────────────────────────────────────────────
-
-  function _startAnalyser() {
-    audioCtx = new AudioContext();
-    const source   = audioCtx.createMediaStreamSource(stream);
-    const analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 64;
-    source.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
-
-    function tick() {
-      analyser.getByteFrequencyData(data);
-      const rms = Math.sqrt(data.reduce((s, v) => s + v * v, 0) / data.length) / 255;
-      onAudioLevel?.(rms);
-      rafId = requestAnimationFrame(tick);
-    }
-    rafId = requestAnimationFrame(tick);
-  }
-
-  function _stopAnalyser() {
-    cancelAnimationFrame(rafId); rafId = null;
-    audioCtx?.close(); audioCtx = null;
-    onAudioLevel?.(0);
-  }
-
-  // ── Envoi Google STT ──────────────────────────────────────────────
-
-  async function _sendChunk(blob) {
-    _pending++;
-    onPending?.(true);
-    try {
-      const b64 = await _blobToBase64(blob);
-      const res = await fetch("/api/speech/transcribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audio: b64, mime_type: mimeType }),
-      });
-      if (res.ok) {
-        const { transcript } = await res.json();
-        if (transcript) _transcript = (_transcript + " " + transcript).trim();
-      }
-    } catch { } finally {
-      _pending--;
-      onPending?.(_pending > 0);
-      if (_pending === 0 && !_recording) {
-        // Tout est terminé — on affiche la transcription complète en une fois
-        if (_transcript) onTranscript(_transcript);
-        onDone?.();
-        _doneResolve?.(); _doneResolve = null;
-      }
-    }
-  }
-
-  // ── Interface publique ────────────────────────────────────────────
-
   return {
-    get isRecording() { return _recording; },
-    get isBusy()      { return _pending > 0; },
+    get isRecording() { return _active; },
+    get isBusy()      { return false; },
 
     async start() {
-      if (_recording || _pending > 0) return;
+      if (_active) return;
+      chunks = [];
+      console.log("[mic] start");
+
       try {
-        stream      = await navigator.mediaDevices.getUserMedia({ audio: true });
-        _recording  = true;
-        _transcript = "";
-        _startAnalyser();
-        _startChunk();
+        stream   = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream, { mimeType: mime });
+
+        recorder.ondataavailable = (e) => {
+          console.log("[mic] dataavailable bytes=", e.data.size);
+          if (e.data.size > 0) chunks.push(e.data);
+        };
+
+        recorder.onstop = async () => {
+          console.log("[mic] onstop — envoi à Google STT");
+          cancelAnimationFrame(rafId); rafId = null;
+          ctx?.close(); ctx = null;
+          onAudioLevel?.(0);
+          stream.getTracks().forEach(t => t.stop());
+          _active = false;
+
+          const blob = new Blob(chunks, { type: mime });
+          console.log("[mic] blob total bytes=", blob.size);
+
+          if (blob.size < 100) {
+            onDone?.(); _resolve?.(); _resolve = null; return;
+          }
+
+          onPending?.(true);
+          try {
+            const b64 = await new Promise(res => {
+              const fr = new FileReader();
+              fr.onloadend = () => res(fr.result.split(",")[1]);
+              fr.readAsDataURL(blob);
+            });
+            console.log("[mic] b64 length=", b64.length, "— POST /api/speech/transcribe");
+            const resp = await fetch("/api/speech/transcribe", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ audio: b64, mime_type: mime }),
+            });
+            console.log("[mic] réponse HTTP", resp.status);
+            if (resp.ok) {
+              const data = await resp.json();
+              console.log("[mic] transcript=", data.transcript);
+              if (data.transcript) onTranscript(data.transcript);
+            }
+          } catch (err) {
+            console.error("[mic] erreur fetch:", err);
+          } finally {
+            onPending?.(false);
+            onDone?.();
+            _resolve?.(); _resolve = null;
+          }
+        };
+
+        // Amplitude visualizer
+        ctx = new AudioContext();
+        const src = ctx.createMediaStreamSource(stream);
+        const ana = ctx.createAnalyser();
+        ana.fftSize = 64;
+        src.connect(ana);
+        const buf = new Uint8Array(ana.frequencyBinCount);
+        const tick = () => {
+          ana.getByteFrequencyData(buf);
+          const rms = Math.sqrt(buf.reduce((s, v) => s + v * v, 0) / buf.length) / 255;
+          onAudioLevel?.(rms);
+          rafId = requestAnimationFrame(tick);
+        };
+        rafId = requestAnimationFrame(tick);
+
+        recorder.start(); // ← PAS de timeslice, enregistrement continu
+        _active = true;
+        console.log("[mic] enregistrement actif, mimeType=", mime);
+
       } catch (err) {
-        _recording = false;
+        console.error("[mic] erreur start:", err.name, err.message);
+        _active = false;
         onError(err.name === "NotAllowedError"
           ? "Microphone refusé — autorisez-le dans les paramètres du navigateur"
           : "Impossible d'accéder au microphone");
@@ -148,27 +113,12 @@ export function createVoiceRecorder({ onTranscript, onDone, onError, onAudioLeve
     },
 
     stop() {
-      if (!_recording) return Promise.resolve();
-      _recording = false;
-      clearTimeout(chunkTimer);
-      _stopAnalyser();
-      return new Promise((resolve) => {
-        _doneResolve = resolve;
-        if (currentRecorder?.state === "recording") {
-          currentRecorder.stop();
-        } else {
-          stream?.getTracks().forEach((t) => t.stop());
-          if (_pending === 0) { onDone?.(); resolve(); _doneResolve = null; }
-        }
+      console.log("[mic] stop(), _active=", _active);
+      if (!_active || !recorder) return Promise.resolve();
+      return new Promise(res => {
+        _resolve = res;
+        recorder.stop();
       });
     },
   };
-}
-
-function _blobToBase64(blob) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(",")[1]);
-    reader.readAsDataURL(blob);
-  });
 }

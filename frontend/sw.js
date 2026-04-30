@@ -3,7 +3,7 @@
  * JS et HTML : toujours réseau pour que les mises à jour soient immédiates.
  */
 
-const CACHE = "newsfeed-v4";
+const CACHE = "newsfeed-v5";
 
 // Activation immédiate sans pré-cache — skipWaiting fire instantanément
 self.addEventListener("install", () => self.skipWaiting());
