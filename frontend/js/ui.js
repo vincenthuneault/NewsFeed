@@ -362,26 +362,35 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
 
     let _stopRequested = false;
 
-    const _stopMic = () => {
-      _stopRequested = true;
-      if (recorder.isRecording) recorder.stop();
-    };
-
-    micBtn.addEventListener("pointerdown", async (e) => {
-      e.preventDefault();
+    async function _pressStart(e) {
+      e.preventDefault();   // empêche menu contextuel + événements souris sur touch
+      e.stopPropagation();
       if (recorder.isBusy) return;
       _stopRequested = false;
-      micBtn.setPointerCapture(e.pointerId); // pointerup reçu même si le doigt glisse
       micBtn.classList.add("btn-mic--recording");
       canvas.classList.remove("hidden");
       await recorder.start();
-      // getUserMedia peut être lent (dialogue permission) — si l'utilisateur
-      // a déjà relâché pendant ce temps, on arrête immédiatement
       if (_stopRequested && recorder.isRecording) recorder.stop();
-    });
+    }
 
-    micBtn.addEventListener("pointerup",     _stopMic);
-    micBtn.addEventListener("pointercancel", _stopMic);
+    function _pressEnd(e) {
+      e?.preventDefault();
+      _stopRequested = true;
+      if (recorder.isRecording) recorder.stop();
+    }
+
+    // Touch (mobile / PWA)
+    micBtn.addEventListener("touchstart",  _pressStart, { passive: false });
+    micBtn.addEventListener("touchend",    _pressEnd,   { passive: false });
+    micBtn.addEventListener("touchcancel", _pressEnd,   { passive: false });
+
+    // Souris (desktop) — touchstart + preventDefault empêche ces events sur mobile
+    micBtn.addEventListener("mousedown",  _pressStart);
+    micBtn.addEventListener("mouseup",    _pressEnd);
+    micBtn.addEventListener("mouseleave", _pressEnd);
+
+    // Empêche le menu contextuel sur appui long
+    micBtn.addEventListener("contextmenu", (e) => e.preventDefault());
 
     btnRow.appendChild(micBtn);
   }
