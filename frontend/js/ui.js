@@ -360,21 +360,28 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
 
     micBtn.title = "Maintenir pour dicter";
 
+    let _stopRequested = false;
+
     const _stopMic = () => {
+      _stopRequested = true;
       if (recorder.isRecording) recorder.stop();
     };
 
     micBtn.addEventListener("pointerdown", async (e) => {
-      e.preventDefault(); // évite le menu contextuel sur appui long mobile
+      e.preventDefault();
       if (recorder.isBusy) return;
+      _stopRequested = false;
+      micBtn.setPointerCapture(e.pointerId); // pointerup reçu même si le doigt glisse
       micBtn.classList.add("btn-mic--recording");
       canvas.classList.remove("hidden");
       await recorder.start();
+      // getUserMedia peut être lent (dialogue permission) — si l'utilisateur
+      // a déjà relâché pendant ce temps, on arrête immédiatement
+      if (_stopRequested && recorder.isRecording) recorder.stop();
     });
 
     micBtn.addEventListener("pointerup",     _stopMic);
     micBtn.addEventListener("pointercancel", _stopMic);
-    micBtn.addEventListener("pointerleave",  _stopMic);
 
     btnRow.appendChild(micBtn);
   }
