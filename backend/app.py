@@ -47,11 +47,22 @@ def create_app(config: dict | None = None) -> Flask:
 
     frontend_dir = PROJECT_ROOT / "frontend"
 
+    # Fichiers qui ne doivent jamais être mis en cache par le navigateur.
+    # Le SW fait déjà Network First pour JS/CSS, mais le cache HTTP du browser
+    # est consulté même lors d'un fetch() SW — no-cache force une revalidation.
+    _NO_CACHE_EXTS = {".html", ".js", ".css"}
+
+    def _add_no_cache(response):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        return response
+
     # Service worker doit être servi à la racine
     @app.route("/sw.js")
     def service_worker():
-        return send_from_directory(str(frontend_dir), "sw.js",
+        resp = send_from_directory(str(frontend_dir), "sw.js",
                                    mimetype="application/javascript")
+        return _add_no_cache(resp)
 
     @app.route("/manifest.json")
     def manifest():
@@ -60,10 +71,13 @@ def create_app(config: dict | None = None) -> Flask:
 
     @app.route("/")
     def index():
-        return send_from_directory(str(frontend_dir), "index.html")
+        return _add_no_cache(send_from_directory(str(frontend_dir), "index.html"))
 
     @app.route("/<path:filename>")
     def frontend_files(filename: str):
-        return send_from_directory(str(frontend_dir), filename)
+        resp = send_from_directory(str(frontend_dir), filename)
+        if any(filename.endswith(ext) for ext in _NO_CACHE_EXTS):
+            _add_no_cache(resp)
+        return resp
 
     return app
