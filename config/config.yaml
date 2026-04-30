@@ -5,7 +5,7 @@
 # --- Général ---
 app:
   name: "Lecteur de nouvelle"
-  version: "1.7.0"
+  version: "1.7.1"
   env: "development"  # development | production
   timezone: "America/Montreal"
   daily_run_hour: 6  # Heure d'exécution quotidienne (24h)
