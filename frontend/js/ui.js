@@ -278,6 +278,35 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
   textarea.placeholder = placeholder;
   textarea.rows = 3;
 
+  // ── Canvas d'amplitude ──
+  const canvas = document.createElement("canvas");
+  canvas.className = "voice-amplitude hidden";
+  canvas.height = 36;
+  const ampHistory = [];
+
+  function drawAmplitude(level) {
+    const W = canvas.width;
+    const H = canvas.height;
+    const BAR = 3, GAP = 1, SLOT = BAR + GAP;
+    const maxBars = Math.floor(W / SLOT);
+
+    ampHistory.push(level);
+    if (ampHistory.length > maxBars) ampHistory.shift();
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ampHistory.forEach((v, i) => {
+      const barH = Math.max(2, v * H * 0.9);
+      ctx.fillStyle = `rgba(79,142,247,${0.35 + v * 0.65})`;
+      ctx.fillRect(i * SLOT, (H - barH) / 2, BAR, barH);
+    });
+  }
+
+  // ── Indicateur d'attente API ──
+  const pending = document.createElement("div");
+  pending.className = "voice-pending hidden";
+  pending.innerHTML = `<span class="voice-pending-dot"></span>Transcription…`;
+
   const btnRow = document.createElement("div");
   btnRow.className = "menu-textarea-actions";
 
@@ -292,14 +321,26 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
 
     recorder = createVoiceRecorder({
       onTranscript: (text) => { textarea.value = text; },
-      onStop:       (text) => {
+      onStop: (text) => {
         textarea.value = text;
         micBtn.classList.remove("btn-mic--recording");
+        canvas.classList.add("hidden");
+        ampHistory.length = 0;
       },
       onError: (msg) => {
         showToast(msg);
         micBtn.classList.remove("btn-mic--recording");
+        canvas.classList.add("hidden");
+        ampHistory.length = 0;
       },
+      onAudioLevel: (level) => {
+        // Synchronise la largeur canvas avec son conteneur au premier tick
+        if (canvas.width !== canvas.offsetWidth && canvas.offsetWidth > 0) {
+          canvas.width = canvas.offsetWidth;
+        }
+        drawAmplitude(level);
+      },
+      onPending: (active) => pending.classList.toggle("hidden", !active),
     });
 
     micBtn.addEventListener("click", async () => {
@@ -307,6 +348,7 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
         recorder.stop();
       } else {
         micBtn.classList.add("btn-mic--recording");
+        canvas.classList.remove("hidden");
         await recorder.start();
       }
     });
@@ -335,6 +377,8 @@ function _buildInputSection({ icon, label, placeholder, onSend }) {
 
   btnRow.appendChild(sendBtn);
   area.appendChild(textarea);
+  area.appendChild(canvas);
+  area.appendChild(pending);
   area.appendChild(btnRow);
 
   const toggle = _menuBtn(icon, label, () => area.classList.toggle("hidden"));

@@ -411,6 +411,33 @@ iframe.card__image { border: none; }
 .menu-send-btn:hover { background: #3a7ce0; }
 .menu-send-btn:disabled { background: #555; cursor: not-allowed; }
 
+/* Canvas amplitude + indicateur d'attente */
+.voice-amplitude {
+  width: 100%;
+  border-radius: 0.4rem;
+  background: rgba(255,255,255,0.03);
+  display: block;
+}
+
+.voice-pending {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 0.1rem 0 0.2rem;
+}
+
+.voice-pending-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  animation: pulse-mic 0.8s ease-in-out infinite;
+}
+
 .btn-mic {
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);

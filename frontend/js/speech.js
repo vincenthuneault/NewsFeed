@@ -1,11 +1,12 @@
 /**
  * speech.js — Enregistrement audio par chunks + transcription Google STT.
  *
- * Usage :
- *   import { voiceSupported, createVoiceRecorder } from "./speech.js";
- *   const rec = createVoiceRecorder({ onTranscript, onStop, onError });
- *   await rec.start();
- *   rec.stop();
+ * Callbacks disponibles :
+ *   onTranscript(text)   — texte accumulé à chaque chunk transcrit
+ *   onStop(text)         — texte final une fois l'arrêt complet
+ *   onError(msg)         — erreur micro ou réseau
+ *   onAudioLevel(0..1)   — niveau d'amplitude ~20fps pendant l'enregistrement
+ *   onPending(bool)      — true pendant l'attente de l'API, false à la réponse
  */
 
 export const voiceSupported = !!(
@@ -13,25 +14,51 @@ export const voiceSupported = !!(
   window.MediaRecorder
 );
 
-/**
- * Crée un enregistreur vocal.
- * @param {Object} callbacks
- * @param {(text: string) => void} callbacks.onTranscript  — appelé à chaque chunk transcrit (texte accumulé)
- * @param {(text: string) => void} callbacks.onStop        — appelé une fois l'arrêt complet (texte final)
- * @param {(msg:  string) => void} callbacks.onError       — appelé en cas d'erreur
- */
-export function createVoiceRecorder({ onTranscript, onStop, onError }) {
+export function createVoiceRecorder({ onTranscript, onStop, onError, onAudioLevel, onPending }) {
   let mediaRecorder = null;
   let stream        = null;
+  let audioCtx      = null;
+  let rafId         = null;
   let confirmed     = "";
   let _recording    = false;
+  let _pending      = 0;
 
   const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
     ? "audio/webm;codecs=opus"
     : "audio/ogg;codecs=opus";
 
+  // ── Amplitude via Web Audio API ──────────────────────────────────
+  function _startAnalyser(mediaStream) {
+    audioCtx = new AudioContext();
+    const source   = audioCtx.createMediaStreamSource(mediaStream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+    source.connect(analyser);
+
+    const data = new Uint8Array(analyser.frequencyBinCount);
+
+    function tick() {
+      analyser.getByteFrequencyData(data);
+      const rms = Math.sqrt(data.reduce((s, v) => s + v * v, 0) / data.length) / 255;
+      onAudioLevel?.(rms);
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function _stopAnalyser() {
+    cancelAnimationFrame(rafId);
+    rafId = null;
+    audioCtx?.close();
+    audioCtx = null;
+    onAudioLevel?.(0);
+  }
+
+  // ── Envoi d'un chunk ─────────────────────────────────────────────
   async function sendChunk(blob) {
     if (blob.size === 0) return;
+    _pending++;
+    onPending?.(true);
     try {
       const b64 = await _blobToBase64(blob);
       const res = await fetch("/api/speech/transcribe", {
@@ -47,9 +74,13 @@ export function createVoiceRecorder({ onTranscript, onStop, onError }) {
       }
     } catch {
       // Erreur réseau sur un chunk — on continue
+    } finally {
+      _pending--;
+      if (_pending === 0) onPending?.(false);
     }
   }
 
+  // ── Interface publique ───────────────────────────────────────────
   return {
     get isRecording() { return _recording; },
 
@@ -59,14 +90,17 @@ export function createVoiceRecorder({ onTranscript, onStop, onError }) {
         mediaRecorder = new MediaRecorder(stream, { mimeType });
         confirmed = "";
 
+        _startAnalyser(stream);
+
         mediaRecorder.addEventListener("dataavailable", (e) => sendChunk(e.data));
         mediaRecorder.addEventListener("stop", () => {
+          _stopAnalyser();
           stream.getTracks().forEach((t) => t.stop());
           _recording = false;
           onStop(confirmed);
         });
 
-        mediaRecorder.start(3000); // chunk toutes les 3 secondes
+        mediaRecorder.start(3000);
         _recording = true;
       } catch (err) {
         _recording = false;
@@ -76,7 +110,7 @@ export function createVoiceRecorder({ onTranscript, onStop, onError }) {
 
     stop() {
       if (!_recording || !mediaRecorder) return;
-      mediaRecorder.stop(); // déclenche "dataavailable" (dernier chunk) puis "stop"
+      mediaRecorder.stop();
     },
   };
 }
