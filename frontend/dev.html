@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Console — NewsFeed</title>
+  <link rel="stylesheet" href="/css/dev.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <span class="header-brand">Dev Console</span>
+    </div>
+    <nav class="tab-nav" role="tablist">
+      <button class="tab-btn active" data-tab="dashboard" role="tab">Tableau de bord</button>
+      <button class="tab-btn" data-tab="comments" role="tab">Commentaires</button>
+      <button class="tab-btn" data-tab="bugs" role="tab">Rapports de bug</button>
+      <button class="tab-btn" data-tab="agents" role="tab">Agents</button>
+      <button class="tab-btn" data-tab="news" role="tab">Articles</button>
+    </nav>
+    <div class="header-right">
+      <a href="/" class="back-link">← App</a>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- ── Tableau de bord ────────────────────────────── -->
+    <section id="tab-dashboard" class="tab-panel active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Articles</div>
+          <div class="stat-value" id="stat-news-val">—</div>
+          <div class="stat-sub" id="stat-news-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Commentaires</div>
+          <div class="stat-value" id="stat-comments-val">—</div>
+          <div class="stat-sub" id="stat-comments-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rapports de bug</div>
+          <div class="stat-value" id="stat-bugs-val">—</div>
+          <div class="stat-sub" id="stat-bugs-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Feedbacks</div>
+          <div class="stat-value" id="stat-fb-val">—</div>
+          <div class="stat-sub" id="stat-fb-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Taux de succès agents</div>
+          <div class="stat-value" id="stat-agents-val">—</div>
+          <div class="stat-sub" id="stat-agents-sub"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Commentaires ───────────────────────────────── -->
+    <section id="tab-comments" class="tab-panel hidden">
+      <div class="toolbar">
+        <input class="search-input" id="comments-search" type="search"
+               placeholder="Rechercher dans les commentaires…" autocomplete="off">
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:3rem">#</th>
+              <th>Commentaire</th>
+              <th>Article</th>
+              <th style="width:8rem">Source</th>
+              <th style="width:10rem">Date</th>
+            </tr>
+          </thead>
+          <tbody id="comments-body">
+            <tr class="loading-row"><td colspan="5">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="comments-pager"></div>
+    </section>
+
+    <!-- ── Rapports de bug ────────────────────────────── -->
+    <section id="tab-bugs" class="tab-panel hidden">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:3rem">#</th>
+              <th>Description</th>
+              <th style="width:14rem">Article actif</th>
+              <th style="width:10rem">Date</th>
+              <th style="width:5rem">Contexte</th>
+            </tr>
+          </thead>
+          <tbody id="bugs-body">
+            <tr class="loading-row"><td colspan="5">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="bugs-pager"></div>
+    </section>
+
+    <!-- ── Agents ─────────────────────────────────────── -->
+    <section id="tab-agents" class="tab-panel hidden">
+      <div class="toolbar">
+        <select class="filter-select" id="agent-filter">
+          <option value="">Tous les agents</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:3rem">#</th>
+              <th>Agent</th>
+              <th style="width:7rem">Statut</th>
+              <th style="width:5rem">Items</th>
+              <th style="width:6rem">Durée</th>
+              <th>Erreur</th>
+              <th style="width:10rem">Date</th>
+            </tr>
+          </thead>
+          <tbody id="agents-body">
+            <tr class="loading-row"><td colspan="7">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="agents-pager"></div>
+    </section>
+
+    <!-- ── Articles ───────────────────────────────────── -->
+    <section id="tab-news" class="tab-panel hidden">
+      <div class="toolbar">
+        <input class="search-input" id="news-search" type="search"
+               placeholder="Rechercher par titre…" autocomplete="off">
+        <select class="filter-select" id="category-filter">
+          <option value="">Toutes les catégories</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:3rem">#</th>
+              <th>Titre</th>
+              <th style="width:10rem">Catégorie</th>
+              <th style="width:7rem">Source</th>
+              <th style="width:5rem">Score</th>
+              <th style="width:3.5rem" title="Commentaires">💬</th>
+              <th style="width:3.5rem" title="Feedbacks">👍</th>
+              <th style="width:10rem">Publié</th>
+            </tr>
+          </thead>
+          <tbody id="news-body">
+            <tr class="loading-row"><td colspan="8">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="news-pager"></div>
+    </section>
+
+  </main>
+
+  <!-- ── Modal détail ──────────────────────────────────── -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-box">
+      <div class="modal-header">
+        <span id="modal-title">Détail</span>
+        <button class="modal-close" id="modal-close" aria-label="Fermer">×</button>
+      </div>
+      <pre class="modal-body" id="modal-body"></pre>
+    </div>
+  </div>
+
+  <script src="/js/dev.js"></script>
+</body>
+</html>
