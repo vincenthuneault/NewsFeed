@@ -1,6 +1,29 @@
 {
 	"nodes":[
-		{"id":"e10ebd0c543a60de","x":-560,"y":-280,"width":250,"height":60,"type":"text","text":"Database de commentaire avec status "}
+		{"id":"d59ba7994eab55f4","type":"text","text":"Chef de presse","x":-880,"y":-320,"width":165,"height":60},
+		{"id":"db6b5b372044c9cd","type":"text","text":"Journaliste","x":-1047,"y":-160,"width":140,"height":60},
+		{"id":"4aa64a6175d006d9","type":"text","text":"Journaliste","x":-867,"y":-160,"width":140,"height":60},
+		{"id":"cc49e76b03ab74d9","type":"text","text":"Journaliste","x":-687,"y":-160,"width":140,"height":60},
+		{"id":"b2ee5068543e5662","type":"text","text":"Architecte produit","x":-200,"y":-550,"width":165,"height":60},
+		{"id":"86cf307446cdd38a","type":"text","text":"Ingénieur système","x":-200,"y":-430,"width":165,"height":60},
+		{"id":"d403d0c7a4c34f37","type":"text","text":"Développeur","x":-200,"y":-330,"width":165,"height":60},
+		{"id":"74a800b6122ce0c6","type":"text","text":"Testeur","x":-200,"y":-230,"width":165,"height":60},
+		{"id":"c90679c190c0d0a2","type":"text","text":"Narateur","x":-880,"y":-460,"width":165,"height":60},
+		{"id":"c97df109f80f63c0","type":"text","text":"Editeur","x":-879,"y":-610,"width":165,"height":60},
+		{"id":"7ff66c4e43d1354a","type":"text","text":"Publication","x":-879,"y":-730,"width":165,"height":60}
 	],
-	"edges":[]
+	"edges":[
+		{"id":"0f8217af9a3cfad1","fromNode":"db6b5b372044c9cd","fromSide":"top","toNode":"d59ba7994eab55f4","toSide":"bottom"},
+		{"id":"772ba9a1b9522320","fromNode":"4aa64a6175d006d9","fromSide":"top","toNode":"d59ba7994eab55f4","toSide":"bottom"},
+		{"id":"f896956a76c6a67e","fromNode":"cc49e76b03ab74d9","fromSide":"top","toNode":"d59ba7994eab55f4","toSide":"bottom"},
+		{"id":"c3b71c6ea86c31f3","fromNode":"c90679c190c0d0a2","fromSide":"top","toNode":"c97df109f80f63c0","toSide":"bottom"},
+		{"id":"ed4a420fbcf69e1b","fromNode":"c97df109f80f63c0","fromSide":"top","toNode":"7ff66c4e43d1354a","toSide":"bottom"},
+		{"id":"20fc8f4968b24ef5","fromNode":"b2ee5068543e5662","fromSide":"bottom","toNode":"86cf307446cdd38a","toSide":"top"},
+		{"id":"dc1444ee8517108d","fromNode":"86cf307446cdd38a","fromSide":"bottom","toNode":"d403d0c7a4c34f37","toSide":"top"},
+		{"id":"e7ae6f5c25249c3f","fromNode":"d403d0c7a4c34f37","fromSide":"bottom","toNode":"74a800b6122ce0c6","toSide":"top"},
+		{"id":"2a7b5a44b9bd6de7","fromNode":"74a800b6122ce0c6","fromSide":"right","toNode":"86cf307446cdd38a","toSide":"right"},
+		{"id":"178ef2ec4e13f04e","fromNode":"86cf307446cdd38a","fromSide":"left","toNode":"b2ee5068543e5662","toSide":"left"},
+		{"id":"a82aef475eaddb5e","fromNode":"74a800b6122ce0c6","fromSide":"right","toNode":"d403d0c7a4c34f37","toSide":"right"},
+		{"id":"19bbb0cffa022fc9","fromNode":"d59ba7994eab55f4","fromSide":"top","toNode":"c90679c190c0d0a2","toSide":"bottom"}
+	]
 }

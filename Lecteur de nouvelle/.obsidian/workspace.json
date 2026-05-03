@@ -11,17 +11,14 @@
             "id": "01c2b8e47b71b637",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Flow de données — Code.canvas",
-                "viewState": {
-                  "x": 700,
-                  "y": 500.00000000000006,
-                  "zoom": -1.6855394554727339
-                }
+                "file": "Voix Google.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "Flow de données — Code"
+              "icon": "lucide-file",
+              "title": "Voix Google"
             }
           }
         ]
@@ -81,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 431.5
   },
   "right": {
     "id": "e5c8d063d2dcea5d",
@@ -188,6 +185,14 @@
   },
   "active": "01c2b8e47b71b637",
   "lastOpenFiles": [
+    "Vue d'ensemble.md",
+    "Voix Google.md",
+    "Phase 8 — Cycle en V — Plan.md",
+    "Phase 8 — Cycle en V — Gestion des changements.canvas",
+    "Processus de revue des commentaires.canvas",
+    "Flow de données — Code.canvas",
+    "Développement/Interface de développement.md",
+    "Développement",
     "Architecture du projet.canvas",
     "Références/Plan de projet.md",
     "Références/Manifeste technologique.md",
@@ -196,10 +201,8 @@
     "Milestones/M2 — Multi-agents.md",
     "Milestones/M1 — Vertical slice.md",
     "Milestones/M0 — Setup.md",
-    "Flow de données — Code.canvas",
     "Milestones/M7 — Feedback vocal.md",
     "Untitled.canvas",
-    "Vue d'ensemble.md",
     "Milestones/M6 — Commentaires et bugs.md"
   ]
 }

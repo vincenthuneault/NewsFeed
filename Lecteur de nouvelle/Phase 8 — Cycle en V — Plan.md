@@ -13,12 +13,12 @@ Mettre en place un processus d'ingénierie structuré (cycle en V) qui transform
 
 ## Acteurs
 
-| Agent | Rôle | Type |
-|-------|------|------|
-| 🏗️ **Architecte Produit** | Vision produit, approbations, arbitrage final | Agent IA assisté par l'utilisateur |
-| ⚙️ **Ingénieurs Système** | Requis par domaine, DVP, analyse d'impact | Agents IA spécialisés (un par domaine) |
-| 💻 **Développeur** | Implémentation, tests unitaires | Agent IA |
-| 🧪 **Testeur** | Tests de régression, DVP, intégration | Agent IA |
+| Agent                      | Rôle                                          | Type                                   |
+| -------------------------- | --------------------------------------------- | -------------------------------------- |
+| 🏗️ **Architecte Produit** | Vision produit, approbations, arbitrage final | Agent IA assisté par l'utilisateur     |
+| ⚙️ **Ingénieurs Système**  | Requis par domaine, DVP, analyse d'impact     | Agents IA spécialisés (un par domaine) |
+| 💻 **Développeur**         | Implémentation, tests unitaires               | Agent IA                               |
+| 🧪 **Testeur**             | Tests de régression, DVP, intégration         | Agent IA                               |
 
 ---
 
