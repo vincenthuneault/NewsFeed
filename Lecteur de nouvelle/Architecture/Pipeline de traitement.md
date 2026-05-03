@@ -45,9 +45,9 @@ Sélection des **top 30** items. Aucune catégorie ne dépasse 40% du fil.
 - Fallback : image par défaut par catégorie
 
 ### 5. TTS (`processors/tts_generator.py`)
-- Moteur : Edge TTS (gratuit, async)
-- Voix : `fr-CA-SylvieNeural` (alternative : `fr-CA-AntoineNeural`)
-- Format : MP3, max 60 secondes
+- Moteur : Google Cloud TTS — Gemini 2.5 Pro (`gemini-2.5-pro-tts`)
+- Voix : `Achernar` (`fr-CA`), style journalistique via prompt
+- Format : MP3, max 60 secondes (~700 caractères)
 - Si texte trop long → tronquer avant génération
 
 ### 6. Assemblage (`processors/feed_assembler.py`)

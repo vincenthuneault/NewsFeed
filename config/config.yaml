@@ -5,7 +5,7 @@
 # --- Général ---
 app:
   name: "Lecteur de nouvelle"
-  version: "1.7.11"
+  version: "1.7.12"
   env: "development"  # development | production
   timezone: "America/Montreal"
   daily_run_hour: 6  # Heure d'exécution quotidienne (24h)
@@ -28,7 +28,9 @@ claude:
 tts:
   provider: "google"
   language_code: "fr-CA"
-  voice_name: "fr-CA-Wavenet-A"  # Voix féminine québécoise
+  voice_name: "Achernar"
+  model_name: "gemini-2.5-pro-tts"
+  tts_prompt: "Journaliste rapportant une nouvelle efficacement rapidement"
   audio_encoding: "MP3"
   max_duration_seconds: 60
   # credentials dans secrets/google_tts_credentials.json
