@@ -9,7 +9,6 @@
 		{"id":"infra","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Infrastructure et déploiement.md","x":400,"y":250,"width":350,"height":180},
 		{"id":"tests","type":"file","file":"Projet personnel/Lecteur de nouvelle/Architecture/Tests et qualité.md","x":1000,"y":250,"width":350,"height":180,"color":"6"},
 		{"id":"manifeste","type":"file","file":"Projet personnel/Lecteur de nouvelle/Références/Manifeste technologique.md","x":-800,"y":250,"width":350,"height":180,"color":"5"},
-		{"id":"m0","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M0 — Setup.md","x":-1880,"y":550,"width":1160,"height":1590,"color":"2"},
 		{"id":"m1","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M1 — Vertical slice.md","x":-650,"y":550,"width":260,"height":140,"color":"2"},
 		{"id":"m2","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M2 — Multi-agents.md","x":-300,"y":550,"width":260,"height":140,"color":"2"},
 		{"id":"m3","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M3 — Feedback.md","x":50,"y":550,"width":260,"height":140,"color":"2"},
@@ -18,7 +17,8 @@
 		{"id":"m6","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M6 — Commentaires et bugs.md","x":1100,"y":550,"width":260,"height":140,"color":"2"},
 		{"id":"m7","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M7 — Feedback vocal.md","x":1450,"y":550,"width":260,"height":140,"color":"2"},
 		{"id":"label-milestones","type":"text","text":"# Milestones\n\nChaque gate valide TOUT ce qui précède.\nPas de raccourci.","x":1800,"y":550,"width":280,"height":140,"color":"2"},
-		{"id":"label-flow","type":"text","text":"# Flow de données\n\nSources → Agents → Pipeline → DB → API → Frontend\n\nChaque flèche = un contrat de données clair","x":-490,"y":-560,"width":380,"height":160,"color":"3"}
+		{"id":"label-flow","type":"text","text":"# Flow de données\n\nSources → Agents → Pipeline → DB → API → Frontend\n\nChaque flèche = un contrat de données clair","x":-490,"y":-560,"width":380,"height":160,"color":"3"},
+		{"id":"m0","type":"file","file":"Projet personnel/Lecteur de nouvelle/Milestones/M0 — Setup.md","x":-1060,"y":525,"width":260,"height":190,"color":"2"}
 	],
 	"edges":[
 		{"id":"e-vue-agents","fromNode":"vue-ensemble","fromSide":"bottom","toNode":"agents","toSide":"top","label":"collecte"},

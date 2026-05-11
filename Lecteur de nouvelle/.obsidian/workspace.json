@@ -11,14 +11,17 @@
             "id": "01c2b8e47b71b637",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Voix Google.md",
-                "mode": "source",
-                "source": false
+                "file": "Comment processing.canvas",
+                "viewState": {
+                  "x": -272.5,
+                  "y": 43,
+                  "zoom": 0
+                }
               },
-              "icon": "lucide-file",
-              "title": "Voix Google"
+              "icon": "lucide-layout-dashboard",
+              "title": "Comment processing"
             }
           }
         ]
@@ -185,24 +188,24 @@
   },
   "active": "01c2b8e47b71b637",
   "lastOpenFiles": [
-    "Vue d'ensemble.md",
-    "Voix Google.md",
-    "Phase 8 — Cycle en V — Plan.md",
-    "Phase 8 — Cycle en V — Gestion des changements.canvas",
-    "Processus de revue des commentaires.canvas",
     "Flow de données — Code.canvas",
-    "Développement/Interface de développement.md",
-    "Développement",
-    "Architecture du projet.canvas",
+    "Comment processing.canvas",
+    "Phase 8 — Cycle en V — Gestion des changements.canvas",
+    "Phase 8 — Cycle en V — Plan.md",
     "Références/Plan de projet.md",
     "Références/Manifeste technologique.md",
+    "Architecture du projet.canvas",
+    "Voix Google.md",
+    "Vue d'ensemble.md",
+    "Processus de revue des commentaires.canvas",
+    "Développement/Interface de développement.md",
+    "Développement",
     "Milestones/M3 — Feedback.md",
     "Milestones/M4 — Frontend complet.md",
     "Milestones/M2 — Multi-agents.md",
     "Milestones/M1 — Vertical slice.md",
     "Milestones/M0 — Setup.md",
     "Milestones/M7 — Feedback vocal.md",
-    "Untitled.canvas",
     "Milestones/M6 — Commentaires et bugs.md"
   ]
 }

@@ -1,0 +1,26 @@
+{
+	"nodes":[
+		{"id":"cc8ce304e9214b80","type":"text","text":"Journaliste","x":-555,"y":-160,"width":250,"height":60},
+		{"id":"4b01309ef3d13749","type":"text","text":"Chef de nouvelle","x":-555,"y":-320,"width":250,"height":60},
+		{"id":"4bd957ac7e04dc47","type":"text","text":"Narrateur","x":-555,"y":0,"width":250,"height":60},
+		{"id":"a2328ca856862695","type":"text","text":"Editeur","x":-555,"y":160,"width":250,"height":60},
+		{"id":"a73b27ba246ecf9e","type":"text","text":"Comportementale","x":-240,"y":-190,"width":250,"height":60},
+		{"id":"035f3261f8e16548","type":"text","text":"Ajout au context","x":-240,"y":-130,"width":250,"height":60},
+		{"id":"509b9534c7d661d0","type":"text","text":"Comportementale","x":-240,"y":-350,"width":250,"height":60},
+		{"id":"ea0e5b8045e5e0d3","type":"text","text":"Ajout au context","x":-240,"y":-290,"width":250,"height":60},
+		{"id":"92ae4b447261f452","type":"text","text":"Comportementale","x":-240,"y":-30,"width":250,"height":60},
+		{"id":"603b830839913d1c","type":"text","text":"Ajout au context","x":-240,"y":30,"width":250,"height":60},
+		{"id":"3a860a55592f9245","type":"text","text":"Comportementale","x":-240,"y":130,"width":250,"height":60},
+		{"id":"a3127d1cd70041f3","type":"text","text":"Ajout au context","x":-240,"y":190,"width":250,"height":60}
+	],
+	"edges":[
+		{"id":"3d2ed3847361d0fb","fromNode":"cc8ce304e9214b80","fromSide":"right","toNode":"a73b27ba246ecf9e","toSide":"left"},
+		{"id":"7a1c458cb329af6e","fromNode":"cc8ce304e9214b80","fromSide":"right","toNode":"035f3261f8e16548","toSide":"left"},
+		{"id":"790e1c9dccd2ae47","fromNode":"4b01309ef3d13749","fromSide":"right","toNode":"509b9534c7d661d0","toSide":"left"},
+		{"id":"821da957bfb6fc1f","fromNode":"4b01309ef3d13749","fromSide":"right","toNode":"ea0e5b8045e5e0d3","toSide":"left"},
+		{"id":"951ada053d4f8ad7","fromNode":"4bd957ac7e04dc47","fromSide":"right","toNode":"92ae4b447261f452","toSide":"left"},
+		{"id":"0be21ed680bc0066","fromNode":"4bd957ac7e04dc47","fromSide":"right","toNode":"603b830839913d1c","toSide":"left"},
+		{"id":"4333fb4b3881f2de","fromNode":"a2328ca856862695","fromSide":"right","toNode":"3a860a55592f9245","toSide":"left"},
+		{"id":"c082fce6fbf5e3ac","fromNode":"a2328ca856862695","fromSide":"right","toNode":"a3127d1cd70041f3","toSide":"left"}
+	]
+}
