@@ -44,7 +44,7 @@ Sources (YouTube, RSS, scraping)
     2. Scoring (fraîcheur, fiabilité, diversité, feedback)
     3. Résumé IA (Claude Sonnet → français, 4 phrases max)
     4. Images (og:image / thumbnail → JPEG 720px)
-    5. TTS (Edge TTS → MP3, fr-CA-SylvieNeural)
+    5. TTS (Google Cloud TTS Gemini 2.5 Pro → MP3, voix Achernar fr-CA)
     6. Assemblage du fil quotidien
         │
         ▼  SQLite + fichiers statiques

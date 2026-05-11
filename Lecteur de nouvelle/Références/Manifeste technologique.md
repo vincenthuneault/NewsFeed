@@ -17,7 +17,7 @@
 | Reverse proxy | Nginx |
 | Auth | Cookie de session signé Flask |
 | Frontend | Vanilla JS (ES2022), Vanilla CSS, pas de build |
-| TTS | Edge TTS (`fr-CA-SylvieNeural`) |
+| TTS | Google Cloud TTS — Gemini 2.5 Pro (`Achernar`, `fr-CA`) |
 | LLM | Claude Sonnet (`anthropic` SDK) |
 | YouTube | `google-api-python-client` + OAuth 2.0 |
 | RSS | `feedparser` |
