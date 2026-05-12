@@ -224,6 +224,124 @@ class AgentRun(Base):
 
 
 # ============================================================
+# Aftersales — Suivi ECR / MCA / Investigations
+# ============================================================
+
+
+class ECR(Base):
+    """Engineering Change Record — modification de code requise."""
+
+    __tablename__ = "ecr"
+
+    id           = Column(Integer, primary_key=True, autoincrement=True)
+    ecr_number   = Column(String(20), nullable=False, unique=True, index=True)
+    title        = Column(String(500), nullable=False)
+    status       = Column(String(30), nullable=False, default="a_transmettre", index=True)
+    # a_transmettre | en_cours | corrige | annule
+    priority     = Column(String(10), nullable=False, default="normale")
+    # haute | normale | basse
+    severity     = Column(String(10), nullable=False, default="normale")
+    # critique | haute | normale | basse
+    symptom      = Column(Text, nullable=True)
+    root_cause   = Column(Text, nullable=True)
+    proposed_fix = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc))
+    closed_at  = Column(DateTime, nullable=True)
+
+    status_history = relationship("ECRStatusHistory", back_populates="ecr", cascade="all, delete-orphan")
+    investigations = relationship("Investigation", back_populates="ecr", foreign_keys="Investigation.ecr_id")
+
+    def __repr__(self) -> str:
+        return f"<ECR({self.ecr_number}, status='{self.status}')>"
+
+
+class MCA(Base):
+    """Mise à jour Contexte Agent — changement de configuration sans code."""
+
+    __tablename__ = "mca"
+
+    id              = Column(Integer, primary_key=True, autoincrement=True)
+    mca_number      = Column(String(20), nullable=False, unique=True, index=True)
+    title           = Column(String(500), nullable=False)
+    status          = Column(String(20), nullable=False, default="a_appliquer", index=True)
+    # a_appliquer | applique | en_attente
+    target_agent    = Column(String(200), nullable=True)
+    description     = Column(Text, nullable=True)
+    justification   = Column(Text, nullable=True)
+    blocking_ecr_id = Column(Integer, ForeignKey("ecr.id"), nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc))
+    applied_at = Column(DateTime, nullable=True)
+
+    status_history = relationship("MCAStatusHistory", back_populates="mca", cascade="all, delete-orphan")
+    investigations = relationship("Investigation", back_populates="mca", foreign_keys="Investigation.mca_id")
+
+    def __repr__(self) -> str:
+        return f"<MCA({self.mca_number}, status='{self.status}')>"
+
+
+class Investigation(Base):
+    """Log d'investigation Aftersales — une entrée par cycle."""
+
+    __tablename__ = "investigations"
+
+    id             = Column(Integer, primary_key=True, autoincrement=True)
+    trigger_type   = Column(String(30), nullable=False)
+    # comment | bug_report | feedback | manual
+    trigger_id     = Column(Integer, nullable=True)
+    hypothesis     = Column(Text, nullable=True)
+    data_plan      = Column(Text, nullable=True)
+    data_collected = Column(Text, nullable=True)
+    conclusion     = Column(Text, nullable=True)
+    decision       = Column(String(20), nullable=True)
+    # journalisation | mca | ecr | business
+    ecr_id         = Column(Integer, ForeignKey("ecr.id"), nullable=True)
+    mca_id         = Column(Integer, ForeignKey("mca.id"), nullable=True)
+
+    created_at   = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    completed_at = Column(DateTime, nullable=True)
+
+    ecr = relationship("ECR", back_populates="investigations", foreign_keys=[ecr_id])
+    mca = relationship("MCA", back_populates="investigations", foreign_keys=[mca_id])
+
+    def __repr__(self) -> str:
+        return f"<Investigation(id={self.id}, decision='{self.decision}')>"
+
+
+class ECRStatusHistory(Base):
+    """Audit trail des changements de statut ECR."""
+
+    __tablename__ = "ecr_status_history"
+
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    ecr_id     = Column(Integer, ForeignKey("ecr.id"), nullable=False, index=True)
+    old_status = Column(String(30), nullable=True)
+    new_status = Column(String(30), nullable=False)
+    note       = Column(Text, nullable=True)
+    changed_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    ecr = relationship("ECR", back_populates="status_history")
+
+
+class MCAStatusHistory(Base):
+    """Audit trail des changements de statut MCA."""
+
+    __tablename__ = "mca_status_history"
+
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    mca_id     = Column(Integer, ForeignKey("mca.id"), nullable=False, index=True)
+    old_status = Column(String(20), nullable=True)
+    new_status = Column(String(20), nullable=False)
+    note       = Column(Text, nullable=True)
+    changed_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    mca = relationship("MCA", back_populates="status_history")
+
+
+# ============================================================
 # Utilitaires DB
 # ============================================================
 
@@ -241,6 +359,114 @@ def init_db(database_url: str, echo: bool = False) -> sessionmaker:
     engine = create_engine(database_url, echo=echo)
     Base.metadata.create_all(engine)
     return sessionmaker(bind=engine)
+
+
+def seed_aftersales_data(session) -> dict:
+    """Initialise les ECR et MCA depuis l'analyse Aftersales Mai 2026.
+
+    Idempotent — ne crée rien si les enregistrements existent déjà.
+    Retourne un dict {"ecr": [...], "mca": [...]} des IDs créés.
+    """
+    created: dict = {"ecr": [], "mca": []}
+
+    ecrs = [
+        {
+            "ecr_number": "ECR-003",
+            "title": "Déduplication étendue 7 jours (scorer.py)",
+            "priority": "haute",
+            "severity": "haute",
+            "symptom": "11% du contenu présenté est du déjà-vu (44 slots sur 390). Des articles publiés la veille réapparaissent dans le feed du lendemain.",
+            "root_cause": "Scorer._select_with_diversity() (processors/scorer.py:141) sélectionne le top 30 par final_score sans consulter les daily_feeds précédents. Fenêtre fraîcheur 48h laisse un score non-nul aux articles de la veille.",
+            "proposed_fix": "Charger l'union des item_ids des DailyFeed des 7 derniers jours et exclure ces IDs avant la sélection. Fix estimé ~10 lignes. Ajouter dedup_window_days dans config.yaml.",
+        },
+        {
+            "ecr_number": "ECR-004",
+            "title": "Gate qualité contenu + blacklist The Verge + filtre live streams",
+            "priority": "haute",
+            "severity": "haute",
+            "symptom": "Articles derrière paywall (The Verge) et live streams YouTube passent le filtre avec un contenu inutilisable.",
+            "root_cause": "Absence de seuil minimum sur raw_content avant génération du résumé. Aucun filtre sur patterns live dans les titres YouTube.",
+            "proposed_fix": "1) Gate longueur min raw_content (300 chars). 2) Blacklist domaines dans config.yaml (theverge.com). 3) Filtre titre YouTube : 🔴LIVE, #LIVE, LIVE |.",
+        },
+        {
+            "ecr_number": "ECR-005",
+            "title": "Resserrer catégories vehicules_ev et evenements_mtl",
+            "priority": "normale",
+            "severity": "normale",
+            "symptom": "Articles de vélos électriques et d'infrastructure routière mal catégorisés dans vehicules_ev et evenements_mtl.",
+            "root_cause": "Définitions de catégories trop larges dans les prompts de classification.",
+            "proposed_fix": "vehicules_ev → voitures/camions EV uniquement (exclure vélos, solaire). evenements_mtl → spectacles/sorties culturelles uniquement (exclure infrastructure, politique).",
+        },
+        {
+            "ecr_number": "ECR-006",
+            "title": "Bug stabilité lecteur audio",
+            "priority": "normale",
+            "severity": "normale",
+            "symptom": "Sur certains articles, le lecteur audio nécessite plusieurs tentatives avant de lire l'article en entier.",
+            "root_cause": "Inconnue — investigation requise. Hypothèses : timeout chargement fichier long, audio_path invalide, race condition pipeline/affichage.",
+            "proposed_fix": "1) Ajouter onerror handler sur <audio> côté frontend pour capturer les échecs. 2) Corriger selon analyse des logs.",
+        },
+        {
+            "ecr_number": "ECR-007",
+            "title": "Afficher 'Pourquoi ce contenu' dans l'interface",
+            "priority": "basse",
+            "severity": "basse",
+            "symptom": "L'utilisateur ne comprend pas pourquoi certains articles lui sont présentés.",
+            "root_cause": "Aucun champ presentation_reason dans news_items, aucun affichage frontend.",
+            "proposed_fix": "Ajouter champ presentation_reason (JSON) dans news_items. Afficher catégorie + source + score dans l'interface (tooltip ou menu ⋮).",
+        },
+    ]
+
+    mcas = [
+        {
+            "mca_number": "MCA-001",
+            "title": "Géographie locale resserrée",
+            "target_agent": "Agent Scraping (local_contrecoeur, evenements_mtl)",
+            "description": "Zone acceptée : Contrecoeur, Sorel-Tracy, Grand Montréal (île + rive sud). Exclure : Rimouski, Québec, Ottawa, Toronto, autres provinces.",
+            "justification": "6 articles hors zone : Rimouski, Nouveau-Brunswick, Ottawa, Québec (ville), Toronto.",
+        },
+        {
+            "mca_number": "MCA-002",
+            "title": "Exclusions catégorie vehicules_ev",
+            "target_agent": "Chef de nouvelle / Scorer",
+            "description": "Exclure ou pénaliser dans vehicules_ev : vélos électriques, trottinettes, panneaux solaires, éoliennes.",
+            "justification": "Articles #40 (vélos) et #35 (ferme solaire) mal catégorisés dans vehicules_ev.",
+        },
+        {
+            "mca_number": "MCA-003",
+            "title": "Exclusions catégorie musique_electro",
+            "target_agent": "Agent RSS (musique), Scorer",
+            "description": "Genres acceptés : électro, EDM, techno, house, trance. Exclure : rap, hip-hop, R&B, reggaeton, Bollywood.",
+            "justification": "Article #12 (Fetty Wap — rap) présenté dans catégorie électro. Profil : électro/EDM/techno.",
+        },
+        {
+            "mca_number": "MCA-004",
+            "title": "Filtre géographique viral_trending",
+            "target_agent": "Agent YouTube / Agent Scraping (viral_trending)",
+            "description": "Restreindre au contenu viral nord-américain. Profil : homme 35 ans Québec. Exclure Bollywood, K-pop, tendances hors NA.",
+            "justification": "Article #9 (Drishyam 3 — Bollywood) présenté dans trending.",
+        },
+        {
+            "mca_number": "MCA-005",
+            "title": "Scorer à 0 : sport, jeux vidéo, contenu jeunesse",
+            "target_agent": "Chef de nouvelle / Scorer (tous agents)",
+            "description": "Exclure : sport, jeux vidéo, esports, contenu jeunesse/éducation, articles sans substance.",
+            "justification": "5 articles indésirables : hockey (#13), gaming (#11, #4), jeunesse (#14), article vide (#25).",
+        },
+    ]
+
+    for ecr_data in ecrs:
+        if not session.query(ECR).filter_by(ecr_number=ecr_data["ecr_number"]).first():
+            session.add(ECR(**ecr_data))
+            created["ecr"].append(ecr_data["ecr_number"])
+
+    for mca_data in mcas:
+        if not session.query(MCA).filter_by(mca_number=mca_data["mca_number"]).first():
+            session.add(MCA(**mca_data))
+            created["mca"].append(mca_data["mca_number"])
+
+    session.commit()
+    return created
 
 
 def get_session(session_factory: sessionmaker) -> Session:

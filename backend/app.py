@@ -27,6 +27,7 @@ def create_app(config: dict | None = None) -> Flask:
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
     # Blueprints API
+    from backend.api.aftersales import aftersales_bp
     from backend.api.auth import auth_bp
     from backend.api.bugs import bugs_bp
     from backend.api.comments import comments_bp
@@ -37,6 +38,7 @@ def create_app(config: dict | None = None) -> Flask:
     from backend.api.settings import settings_bp
     from backend.api.speech import speech_bp
 
+    app.register_blueprint(aftersales_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(bugs_bp, url_prefix="/api")
     app.register_blueprint(comments_bp, url_prefix="/api")
