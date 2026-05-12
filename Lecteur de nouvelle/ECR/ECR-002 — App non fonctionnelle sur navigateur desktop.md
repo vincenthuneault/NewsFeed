@@ -48,11 +48,11 @@ Ajout de `overflow: hidden` sur `html` et `body` dans `app.css`. Le scroll de co
 
 > ⚠️ **À couvrir dans les tests cross-platform**
 
-| ID | Scénario | Résultat attendu |
-|----|----------|-----------------|
-| T-UI-06 | Clic ⋮ sur desktop Chrome | Menu ouvert, aucune scrollbar parasite |
-| T-UI-07 | Clic ⋮ sur desktop Firefox | Même comportement que Chrome |
-| T-UI-08 | Scroll du feed sur desktop | Seul le feed scrolle, le body reste fixe |
+| ID          | Scénario                             | Résultat attendu                          |
+| ----------- | ------------------------------------ | ----------------------------------------- |
+| T-UI-06     | Clic ⋮ sur desktop Chrome            | Menu ouvert, aucune scrollbar parasite    |
+| T-UI-07     | Clic ⋮ sur desktop Firefox           | Même comportement que Chrome              |
+| T-UI-08     | Scroll du feed sur desktop           | Seul le feed scrolle, le body reste fixe  |
 | T-DEPLOY-01 | Validation cross-platform avant gate | Mobile ET desktop testés systématiquement |
 
 ### Règle générale
