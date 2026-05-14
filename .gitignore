@@ -26,9 +26,18 @@ static/audio/*.mp3
 *.swp
 *.swo
 
+# Obsidian — état UI local (change à chaque ouverture)
+.obsidian/workspace.json
+.obsidian/community-plugins.json
+.obsidian/plugins/
+
+# Fichiers audio (toutes locations)
+*.mp3
+
 # OS
 .DS_Store
 Thumbs.db
+.Trash-*/
 
 # Alembic
 alembic/versions/*.pyc
