@@ -1,16 +1,17 @@
-# ECR-003 — Déduplication étendue 7 jours
+# ECR-003 — Redéfinition architecturale : Agent Journaliste et Chef de presse
 
 > **Statut** : 🔵 À transmettre
 > **Priorité** : 🔴 Haute
-> **Sévérité** : Haute — 11% du contenu présenté est du déjà-vu (44 slots gaspillés sur 390)
+> **Sévérité** : Haute — 11% du contenu présenté est du déjà-vu (44 slots gaspillés sur 390) + absence de gate éditorial
 > **Source** : [[Analyse Aftersales — Mai 2026]] · Cycle 1 (30 avril – 4 mai 2026)
 > **Créé** : 2026-05-11
+> **Révisé** : 2026-05-14 — portée élargie suite à analyse architecturale
 
 ---
 
 ## Symptôme
 
-Des articles publiés la veille (ou les jours précédents) réapparaissent dans le feed du lendemain. L'utilisateur reçoit du contenu déjà vu, réduisant la valeur perçue du feed.
+Des articles scrappés la veille réapparaissent dans le feed du lendemain. L'utilisateur reçoit du contenu déjà vu, réduisant la valeur perçue du feed.
 
 **Ampleur confirmée par investigation DB (28 avril → 11 mai 2026) :**
 | Fréquence | Nombre d'articles |
@@ -21,52 +22,67 @@ Des articles publiés la veille (ou les jours précédents) réapparaissent dans
 
 **44 slots gaspillés sur 390 = 11% du contenu est du déjà-vu.**
 
-**Exemples confirmés (feed 02/05 → 03/05) :**
-- DARPA — lunar orbiter studies
-- Amazon Leo — 300 satellites
-- Trump nominates Schiess — Space Force
-- Starcloud — orbital data center funding
-- The opportunity beyond orbital data centers
-- Tesla Model 3 RWD Canada
-- NASA CLPS contract value increase
+---
+
+## Analyse de la cause racine
+
+### Investigation initiale (2026-05-11)
+
+Le `Scorer` sélectionne le top 30 par `final_score` sans jamais consulter les `daily_feeds` précédents. La fenêtre de fraîcheur à 48h (`freshness_decay_hours: 48`) laisse un score non-nul aux articles de la veille, qui peuvent donc être resélectionnés le lendemain.
+
+### Cause racine réelle (2026-05-14)
+
+La correction par fenêtre de 7 jours dans le scorer était un **patch sur les symptômes**, pas sur la cause racine. L'investigation architecturale a révélé que le problème fondamental est l'**absence de séparation entre collecte et curation** :
+
+1. **Pas de concept de journaliste** — les agents RSS scrappent sans sujet assigné ni quota quotidien. Ils peuvent remonter des articles de plusieurs jours.
+2. **Pas de gate éditorial** — le feed est assemblé automatiquement sans qu'aucun agent ne valide "cet article est-il pertinent pour aujourd'hui?".
+3. **Mémoire inexistante** — aucun agent ne sait ce qu'il a déjà proposé dans le passé.
+
+Si l'architecture distingue "journaliste qui propose aujourd'hui" de "chef de presse qui sélectionne parmi les propositions d'aujourd'hui", les doublons cross-journées deviennent **structurellement impossibles** : on ne peut pas sélectionner un article d'hier si seuls les articles d'aujourd'hui sont candidats.
 
 ---
 
-## Cause racine
+## Solution architecturale
 
-**Fichier** : `processors/scorer.py`
-**Fonction** : `Scorer._select_with_diversity()` — ligne 141
+Remplacer le pipeline de scraping générique par deux agents IA distincts :
 
-Le scorer sélectionne le top 30 par `final_score` **sans jamais consulter les `daily_feeds` précédents**. La fenêtre de fraîcheur est configurée à 48h (`freshness_decay_hours: 48`), ce qui laisse encore un score non-nul aux articles de la veille. Le `FeedAssembler` sauvegarde simplement ce qu'il reçoit — aucune mémoire non plus.
+### Agent Journaliste
+- Sujet assigné (ex: Politique québécoise, Tech/IA, Événements MTL)
+- Soumet jusqu'à 5 articles **publiés aujourd'hui** sur son sujet
+- Vérifie contre son historique complet qu'il ne repropose jamais une URL déjà soumise
+- Reçoit un feedback binaire (✅ / ❌) du Chef de presse après chaque journée
 
-Le déduplicateur d'URL existant (en amont) fonctionne correctement — il élimine les doublons exacts dans le même batch. Le problème est en aval, dans la **sélection cross-journées**.
+→ Voir [[Agents/Journaliste]] pour la description complète
+
+### Agent Chef de presse
+- Ne voit que les articles soumis **aujourd'hui** par les journalistes
+- Sélectionne jusqu'à 30 articles pour le `daily_feeds` du jour
+- Applique les préférences utilisateur, commentaires et feedbacks historiques
+- Rejette les articles sous le seuil de qualité avec un flag binaire dans `news_items`
+- Transmet le feed validé au Narrateur
+
+→ Voir [[Agents/Chef de presse]] pour la description complète
 
 ---
 
-## Correction proposée
+## Décisions de conception
 
-Dans `Scorer._select_with_diversity()` :
+| Décision | Choix retenu | Raison |
+|----------|-------------|--------|
+| Déduplication cross-journalistes | ❌ Différé | Complexité vs. valeur — risque accepté en date du 2026-05-14 |
+| Feedback éditorial | ✅ Binaire (pass/fail) | Simple à vérifier, base pour amélioration future |
+| Quota journaliste | ≤ 5 articles/jour | Pas de minimum strict — les jours creux produisent moins |
+| Nature du Chef de presse | Agent IA | Tout le système est AI — pas d'interface humaine |
+| Fenêtre de 7 jours (solution initiale) | ❌ Abandonnée | Patch sur symptôme, remplacé par gate éditorial |
 
-1. Charger l'union des `item_ids` de tous les `DailyFeed` des **7 derniers jours**
-2. Exclure ces IDs de la liste de candidats avant la sélection du top 30
-3. Fix estimé : ~10 lignes dans `scorer.py`
+---
 
-```python
-# Pseudo-code de la correction
-recent_feeds = session.query(DailyFeed).filter(
-    DailyFeed.date >= date.today() - timedelta(days=7)
-).all()
-already_seen_ids = set(
-    item_id for feed in recent_feeds for item_id in feed.item_ids
-)
-candidates = [item for item in candidates if item.id not in already_seen_ids]
-```
+## Développements futurs hors scope
 
-**Paramètre à ajouter dans `config.yaml` :**
-```yaml
-pipeline:
-  dedup_window_days: 7   # Fenêtre de déduplication cross-journées (défaut : 7)
-```
+- Déduplication cross-journalistes (deux journalistes sur sujets proches)
+- Système multi-agents de review (rédaction, profondeur, expertise sujet)
+- Mémoire de raisonnement des journalistes
+- Expertise interrogeable : le journaliste répond à des questions sur son domaine
 
 ---
 
@@ -74,11 +90,21 @@ pipeline:
 
 | ID | Scénario | Résultat attendu |
 |----|----------|-----------------|
-| T-ECR003-01 | Article publié hier → lancé dans le pipeline aujourd'hui | Exclu du feed du jour |
-| T-ECR003-02 | Article publié il y a 8 jours → lancé dans le pipeline | Inclus (hors fenêtre) |
-| T-ECR003-03 | Nouvel article sur le même sujet (URL différente) | Inclus (ce n'est pas un doublon) |
-| T-ECR003-04 | Pipeline sur 2 semaines consécutives | Aucun article n'apparaît 2× dans la fenêtre de 7 jours |
-| T-ECR003-05 | `dedup_window_days: 0` dans config | Comportement actuel restauré (régression intentionnelle) |
+| T-ECR003-01 | Journaliste soumet un article avec une URL déjà dans `news_items` | Article rejeté avant soumission |
+| T-ECR003-02 | Chef de presse voit les articles soumis hier | Aucun — seul aujourd'hui est accessible |
+| T-ECR003-03 | Journaliste A et B proposent la même URL le même jour | Un seul apparaît dans le feed (dédup pipeline existant) |
+| T-ECR003-04 | Journaliste ne trouve que 2 articles un jour creux | Feed du jour contient moins de 30 articles — comportement normal |
+| T-ECR003-05 | Article rejeté par le Chef de presse | Flag binaire dans `news_items`, visible au journaliste le lendemain |
+| T-ECR003-06 | Pipeline sur 2 semaines consécutives | Aucun article n'apparaît 2× |
+
+---
+
+## Historique de la réflexion
+
+| Date | Événement |
+|------|-----------|
+| 2026-05-11 | Création de l'ECR — solution proposée : fenêtre de dédup 7 jours dans le scorer |
+| 2026-05-14 | Révision architecturale — session Claude Code du 2026-05-14. La conversation a établi que le pipeline est entièrement automatisé (pas de journalistes humains), que la solution 7 jours était un patch sur les symptômes, et que la vraie correction est architecturale : agents Journaliste + Chef de presse. Décisions clés documentées dans la section "Décisions de conception". |
 
 ---
 
@@ -86,6 +112,8 @@ pipeline:
 
 - [[Bugs/Backlog]] — statut global
 - [[Analyse Aftersales — Mai 2026]] — investigation complète (section 1)
+- [[Agents/Journaliste]] — description de l'agent journaliste
+- [[Agents/Chef de presse]] — description de l'agent chef de presse
 - [[Phase 8 — Cycle en V — Plan]] — processus ingénierie
 
-#ecr #deduplication #scorer #haute-priorite
+#ecr #architecture #journaliste #chef-de-presse #haute-priorite
