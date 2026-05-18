@@ -5,7 +5,8 @@
 > **Sévérité** : Haute — 11% du contenu présenté est du déjà-vu (44 slots gaspillés sur 390) + absence de gate éditorial
 > **Source** : [[Analyse Aftersales — Mai 2026]] · Cycle 1 (30 avril – 4 mai 2026)
 > **Créé** : 2026-05-11
-> **Révisé** : 2026-05-14 — portée élargie suite à analyse architecturale
+> **Révisé** : 2026-05-14 — portée élargie suite à analyse architecturale  
+> **Révisé par** : Claude Sonnet 4.6 · 2026-05-14
 
 ---
 

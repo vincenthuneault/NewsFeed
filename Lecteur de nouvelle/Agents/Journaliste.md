@@ -1,6 +1,7 @@
 # Journaliste
 
-> **Rôle** : Agent IA spécialisé dans la collecte quotidienne d'articles sur un sujet assigné. Il est le premier maillon de la salle de nouvelles.
+> **Rôle** : Agent IA spécialisé dans la collecte quotidienne d'articles sur un sujet assigné. Il est le premier maillon de la salle de nouvelles.  
+> **Créé par** : Claude Sonnet 4.6 · 2026-05-14
 
 ---
 
@@ -46,10 +47,10 @@
 
 Le journaliste reçoit un feedback **binaire** du Chef de presse sur chaque article soumis :
 
-| Signal | Signification |
-|--------|--------------|
-| ✅ Accepté | Article intégré au `daily_feeds` du jour |
-| ❌ Rejeté | Flag qualité dans `news_items` — l'article ne correspond pas aux standards éditoriaux |
+| Signal    | Signification                                                                         |
+| --------- | ------------------------------------------------------------------------------------- |
+| ✅ Accepté | Article intégré au `daily_feeds` du jour                                              |
+| ❌ Rejeté  | Flag qualité dans `news_items` — l'article ne correspond pas aux standards éditoriaux |
 
 Ce mécanisme permet au journaliste d'ajuster ses critères de sélection au fil du temps. À terme, un système de review multi-agents évaluera plusieurs dimensions (pertinence, rédaction, profondeur) pour guider le journaliste plus précisément.
 

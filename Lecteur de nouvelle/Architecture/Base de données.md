@@ -4,7 +4,8 @@
 > **ORM** : SQLAlchemy 2.0  
 > **Fichier** : `data/newsfeed.db`  
 > **Tables** : 11  
-> **Migrations** : `Base.metadata.create_all()` au démarrage du pipeline
+> **Migrations** : `Base.metadata.create_all()` au démarrage du pipeline  
+> **Créé par** : Claude Sonnet 4.6 · 2026-05-18
 
 ---
 
@@ -39,26 +40,26 @@ data/newsfeed.db
 
 **But** : Mémoire centrale du système. Contient tous les articles jamais traités par le pipeline depuis le démarrage.
 
-| Colonne | Type | Description |
-|---------|------|-------------|
-| `id` | Integer PK | Identifiant unique |
-| `title` | String | Titre de l'article |
-| `source_url` | String (unique) | URL originale — contrainte d'unicité = déduplication |
-| `source_name` | String | Nom de la source (ex: "Radio-Canada") |
-| `category` | String | Catégorie normalisée (tech_ai, politique_qc, etc.) |
-| `published_at` | DateTime | Date de publication sur la source originale |
-| `description` | Text | Extrait brut de la source |
-| `image_url` | String | URL image distante |
-| `video_url` | String | URL embed vidéo |
-| `video_type` | String | `short` ou `long` |
-| `raw_content` | Text | Contenu brut pour génération du résumé |
-| `popularity_score` | Float | Score brut de popularité (vues, partages) |
-| `summary_fr` | Text | Résumé en français généré par le Summarizer |
-| `image_path` | String | Chemin local du fichier image téléchargé |
-| `audio_path` | String | Chemin local du fichier MP3 généré |
-| `final_score` | Float | Score final pondéré (fraîcheur + popularité + feedback) |
-| `created_at` | DateTime UTC | Date d'ingestion dans le système |
-| `updated_at` | DateTime UTC | Dernière modification |
+| Colonne            | Type            | Description                                             |
+| ------------------ | --------------- | ------------------------------------------------------- |
+| `id`               | Integer PK      | Identifiant unique                                      |
+| `title`            | String          | Titre de l'article                                      |
+| `source_url`       | String (unique) | URL originale — contrainte d'unicité = déduplication    |
+| `source_name`      | String          | Nom de la source (ex: "Radio-Canada")                   |
+| `category`         | String          | Catégorie normalisée (tech_ai, politique_qc, etc.)      |
+| `published_at`     | DateTime        | Date de publication sur la source originale             |
+| `description`      | Text            | Extrait brut de la source                               |
+| `image_url`        | String          | URL image distante                                      |
+| `video_url`        | String          | URL embed vidéo                                         |
+| `video_type`       | String          | `short` ou `long`                                       |
+| `raw_content`      | Text            | Contenu brut pour génération du résumé                  |
+| `popularity_score` | Float           | Score brut de popularité (vues, partages)               |
+| `summary_fr`       | Text            | Résumé en français généré par le Summarizer             |
+| `image_path`       | String          | Chemin local du fichier image téléchargé                |
+| `audio_path`       | String          | Chemin local du fichier MP3 généré                      |
+| `final_score`      | Float           | Score final pondéré (fraîcheur + popularité + feedback) |
+| `created_at`       | DateTime UTC    | Date d'ingestion dans le système                        |
+| `updated_at`       | DateTime UTC    | Dernière modification                                   |
 
 > **Note architecture** : `published_at` = date source originale. `created_at` = date d'ingestion pipeline. Ces deux dates peuvent différer d'un jour si la source publie en soirée et le pipeline tourne le lendemain matin.
 
