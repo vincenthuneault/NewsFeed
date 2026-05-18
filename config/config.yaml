@@ -28,12 +28,75 @@ claude:
 tts:
   provider: "google"
   language_code: "fr-CA"
-  voice_name: "Achernar"
+  voice_name: "Achernar"  # voix par défaut (fallback si catégorie inconnue)
   model_name: "gemini-2.5-pro-tts"
-  tts_prompt: "Journaliste rapportant une nouvelle efficacement rapidement"
+  tts_prompt: >
+    Présentateur de nouvelles professionnel à la radio québécoise. Voix posée et claire,
+    ton informatif avec une légère chaleur humaine. Annonce le titre de la nouvelle de
+    manière distincte, comme une accroche, puis enchaîne naturellement avec le contenu
+    du résumé. Rythme fluide, articulation soignée. Pas de dramatisation excessive,
+    pas de ton monocorde. Tu informes — clairement et agréablement.
   audio_encoding: "MP3"
+  speaking_rate: 1.4
   max_duration_seconds: 60
   # credentials dans secrets/google_tts_credentials.json
+  # -------------------------------------------------------
+  # Voix par catégorie — 1 voix unique par journaliste actif
+  # Pour changer une voix : modifier la valeur sur la ligne concernée
+  # Référence : Lecteur de nouvelle/Voix Google.md
+  # -------------------------------------------------------
+  voices_by_category:
+    politique_ca:      "Achernar"   # Journaliste-PolitiqueCanada
+    politique_qc:      "Charon"     # Journaliste-PolitiqueQuébec
+    evenements_mtl:    "Erinome"    # Journaliste-Montreal
+    youtube_trending:  "Fenrir"     # Journaliste-Trending
+    politique_intl:    "Sulafat"    # Journaliste-PolitiqueInternationale
+    youtube_subs:      "Kore"       # Journaliste-YoutubeSub
+    local_contrecoeur: "Leda"       # Journaliste-Contrecoeur
+    viral:             "Puck"       # Journaliste-ShortsTrending
+  # -------------------------------------------------------
+  # Prompt de style par voix — dirige le comportement vocal TTS
+  # Ajouter une entrée ici pour toute nouvelle voix
+  # -------------------------------------------------------
+  style_prompts_by_voice:
+    Achernar: >
+      Correspondant politique professionnel. Ton factuel, neutre et posé. Tu présentes les
+      décisions gouvernementales et les enjeux politiques avec clarté et autorité. Articulation
+      précise, rythme mesuré. Commence par le titre comme une manchette, puis enchaîne avec
+      le résumé sans dramatisation. L'auditeur doit sentir le poids et la fiabilité de
+      l'information.
+    Charon: >
+      Correspondant à l'Assemblée nationale de Québec. Ton sérieux et ancré dans la réalité
+      québécoise — un cran plus proche du terrain que le bureau fédéral, sans perdre la
+      rigueur factuelle. Présente les enjeux provinciaux avec clarté et un sens du contexte
+      local. Articulation soignée, rythme mesuré.
+    Erinome: >
+      Animatrice culture et divertissement à la radio montréalaise. Ton vif et engageant,
+      légèrement enthousiaste. Tu présentes des événements culturels et des tendances en ligne
+      avec une énergie qui donne envie de s'y intéresser. Annonce le titre comme une invitation,
+      puis enchaîne avec le résumé. Rythme dynamique, ton accessible et moderne.
+    Fenrir: >
+      Présentateur de contenus tendance sur YouTube. Ton alerte et moderne, énergie naturelle
+      qui donne envie de regarder. Tu annonces les vidéos du moment avec fluidité et un rythme
+      légèrement plus vif qu'un bulletin de nouvelles classique. Direct, accrocheur, sans en
+      faire trop.
+    Sulafat: >
+      Grand reporter international. Voix assurée et directe, ton sobre et posé. Tu couvres
+      des événements qui touchent le monde entier — ton sérieux reflète l'ampleur des enjeux
+      géopolitiques. Annonce le titre d'un seul souffle, puis livre le résumé avec précision.
+      Articulation soignée, rythme lent et clair.
+    Kore: >
+      Présentatrice d'une sélection de vidéos personnalisées. Ton chaleureux et familier,
+      comme si tu recommandais quelque chose à un ami de confiance. Décontractée mais claire.
+      Tu valorises chaque vidéo sans survendre — sincère, naturelle, rythme conversationnel.
+    Leda: >
+      Journaliste communautaire d'une radio locale de Contrecoeur. Ton chaleureux et familier,
+      tu t'adresses à tes voisins. Rythme posé et naturel, comme une conversation de quartier.
+      Tu crées un sentiment de proximité avec l'actualité locale.
+    Puck: >
+      Présentateur de contenu viral et courts métrages. Ton léger et complice, légèrement
+      amusé. Tu partages quelque chose que tout le monde va vouloir voir ou partager avec
+      ses proches. Rythme vif, énergie positive et communicative. Court, clair, accrocheur.
 
 # --- YouTube Data API ---
 youtube:
@@ -86,6 +149,18 @@ images:
 deduplication:
   fuzzy_threshold: 80  # Seuil rapidfuzz (0-100)
   max_duplicate_ratio: 0.30  # Alerte si > 30% doublons
+
+# --- Gate technique (avant summarisation) ---
+# Filtre les articles techniquement inutilisables avant d'appeler Claude.
+# Le Chef de nouvelles ne voit que les articles ayant passé cette gate.
+content_gate:
+  min_raw_content_chars: 300        # raw_content trop court → article vide ou paywall
+  blacklisted_domains:
+    - theverge.com                  # Paywall systématique
+  title_patterns_rejected:
+    - "🔴LIVE"                      # Live streams YouTube
+    - "#LIVE"
+    - "LIVE |"
 
 # --- Auth ---
 auth:

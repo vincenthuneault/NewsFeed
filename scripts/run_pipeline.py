@@ -33,7 +33,7 @@ def main(dry_run: bool = False) -> int:
     t_total = time.time()
 
     try:
-        # 1. Agents
+        # 1. Agents — collecte parallèle
         from agents.youtube_subs import YouTubeSubsAgent
         from agents.youtube_trending import YouTubeTrendingAgent
         from agents.viral_trending import ViralTrendingAgent
@@ -56,36 +56,59 @@ def main(dry_run: bool = False) -> int:
         raw_items, reports = orchestrator.run()
 
         agents_ok = sum(1 for r in reports if r.status == "success")
-        log.info("Orchestrateur terminé", extra={"agents_ok": agents_ok, "total": len(reports), "items": len(raw_items)})
+        log.info("Orchestrateur terminé", extra={
+            "agents_ok": agents_ok,
+            "total": len(reports),
+            "items": len(raw_items),
+        })
 
         if not raw_items:
             log.error("Aucun item collecté — pipeline abandonné")
             return 1
 
-        # 3. Déduplication
+        # 3. Déduplication intra-journée
         from core.deduplicator import Deduplicator
         deduped = Deduplicator(config).deduplicate(raw_items)
 
-        # 4. Scoring
-        from processors.scorer import Scorer
-        scored = Scorer(config).process(deduped)
+        log.info("Déduplication terminée", extra={
+            "avant": len(raw_items),
+            "après": len(deduped),
+        })
 
-        # 5. Pipeline
+        # 4. Pipeline : gate → résumés → Chef de nouvelles → image → TTS → DB
         from core.pipeline import Pipeline
-        news_items = Pipeline(config).run(scored)
+        news_items = Pipeline(config).run(deduped)
 
         elapsed = time.time() - t_total
         log.info(
             "Pipeline quotidien terminé",
             extra={
                 "date": date.today().isoformat(),
-                "items_saved": len(news_items),
+                "items_publiés": len(news_items),
                 "duration_s": round(elapsed, 1),
                 "agents_ok": f"{agents_ok}/{len(reports)}",
             },
         )
 
         print(f"[OK] {date.today()} — {len(news_items)} items en {elapsed:.0f}s ({agents_ok}/{len(reports)} agents)")
+
+        # 5. Agent Aftersales — analyse des signaux utilisateur post-publication
+        try:
+            from agents.aftersales_agent import AftersalesAgent
+            from sqlalchemy import create_engine
+            from sqlalchemy.orm import sessionmaker
+            from core.models import Base
+
+            db_url = config.get("database", {}).get("url", "sqlite:///data/newsfeed.db")
+            engine = create_engine(db_url)
+            Base.metadata.create_all(engine)
+            af_session = sessionmaker(bind=engine)()
+            AftersalesAgent(config).run(af_session)
+            af_session.close()
+        except Exception as exc:
+            # L'Aftersales est non-bloquant — le pipeline est déjà terminé
+            log.warning("Agent Aftersales échoué (non bloquant)", extra={"error": str(exc)})
+
         return 0
 
     except Exception as exc:

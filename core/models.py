@@ -111,6 +111,7 @@ class NewsItem(Base):
     image_path = Column(String(500), nullable=True)
     audio_path = Column(String(500), nullable=True)
     final_score = Column(Float, default=0.0, index=True)
+    editorial_note = Column(Text, nullable=True)  # Rempli par Chef de nouvelles pour les articles rejetés
 
     # Timestamps
     created_at = Column(
@@ -372,12 +373,12 @@ def seed_aftersales_data(session) -> dict:
     ecrs = [
         {
             "ecr_number": "ECR-003",
-            "title": "Déduplication étendue 7 jours (scorer.py)",
+            "title": "Redéfinition architecturale — Agent Journaliste et Chef de nouvelles",
             "priority": "haute",
             "severity": "haute",
-            "symptom": "11% du contenu présenté est du déjà-vu (44 slots sur 390). Des articles publiés la veille réapparaissent dans le feed du lendemain.",
-            "root_cause": "Scorer._select_with_diversity() (processors/scorer.py:141) sélectionne le top 30 par final_score sans consulter les daily_feeds précédents. Fenêtre fraîcheur 48h laisse un score non-nul aux articles de la veille.",
-            "proposed_fix": "Charger l'union des item_ids des DailyFeed des 7 derniers jours et exclure ces IDs avant la sélection. Fix estimé ~10 lignes. Ajouter dedup_window_days dans config.yaml.",
+            "symptom": "11% du contenu présenté est du déjà-vu (44 slots sur 390). Articles hors profil utilisateur, sélection algorithmique sans compréhension éditoriale du contexte.",
+            "root_cause": "Le Scorer algorithmique (processors/scorer.py) sélectionne le top 30 par score multi-facteur sans vision éditoriale. Il n'a pas accès au profil utilisateur, ne peut pas évaluer la suffisance informationnelle, et ne garantit pas que seuls les articles du jour sont présentés.",
+            "proposed_fix": "Remplacement du Scorer comme sélecteur final par un agent IA Chef de nouvelles (agents/chef_de_nouvelles.py). Le Chef reçoit tous les articles summarisés du jour, évalue leur qualité informationnelle, sélectionne et ordonne ≤30 articles selon le profil utilisateur. Les doublons cross-journées deviennent architecturalement impossibles — le Chef ne voit que les articles créés aujourd'hui. Décision architecturale prise le 2026-05-14.",
         },
         {
             "ecr_number": "ECR-004",
