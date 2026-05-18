@@ -61,6 +61,20 @@ data/newsfeed.db
 | `created_at`       | DateTime UTC    | Date d'ingestion dans le système                        |
 | `updated_at`       | DateTime UTC    | Dernière modification                                   |
 
+**Qui écrit :** `core/pipeline.py` → `_save_to_db()` — insère chaque article après traitement complet (résumé + image + audio)
+
+**Qui lit :**
+| Fichier | Pourquoi |
+|---------|----------|
+| `processors/scorer.py` | Lit les feedbacks liés pour pondérer le `final_score` |
+| `backend/api/feed.py` | Retourne les articles du feed courant au frontend |
+| `backend/api/feedback.py` | Vérifie l'existence de l'article avant d'enregistrer un feedback |
+| `backend/api/comments.py` | Vérifie l'existence de l'article avant d'enregistrer un commentaire |
+| `backend/api/dev.py` | Stats, recherche et interface de développement |
+| `backend/api/health.py` | Compteurs de santé système |
+| `scripts/daily_monitor.py` | Monitoring quotidien |
+| `view_comments.py` | Outil CLI de visualisation des commentaires |
+
 > **Note architecture** : `published_at` = date source originale. `created_at` = date d'ingestion pipeline. Ces deux dates peuvent différer d'un jour si la source publie en soirée et le pipeline tourne le lendemain matin.
 
 ---
@@ -81,6 +95,16 @@ data/newsfeed.db
 
 > **Lien ECR-003** : Cette table est au cœur de la solution architecturale. L'agent [[Agents/Chef de presse]] n'aura accès qu'aux `news_items` dont `created_at` correspond à aujourd'hui — rendant les doublons cross-journées structurellement impossibles.
 
+**Qui écrit :** `core/pipeline.py` → `_create_daily_feed()` — crée ou met à jour l'entrée du jour après chaque pipeline
+
+**Qui lit :**
+| Fichier | Pourquoi |
+|---------|----------|
+| `backend/api/feed.py` | Retourne le feed du jour ou un feed historique au frontend |
+| `backend/api/health.py` | Vérifie le statut du feed du jour |
+| `backend/api/dev.py` | Stats |
+| `scripts/daily_monitor.py` | Monitoring quotidien |
+
 ---
 
 ### `agent_runs` — 237 lignes
@@ -96,6 +120,15 @@ data/newsfeed.db
 | `duration_seconds` | Float | Durée d'exécution |
 | `error_message` | Text | Message d'erreur si échec |
 | `created_at` | DateTime UTC | Timestamp de l'exécution |
+
+**Qui écrit :** `core/orchestrator.py` → `_save_reports()` — enregistre un rapport après chaque exécution d'agent
+
+**Qui lit :**
+| Fichier | Pourquoi |
+|---------|----------|
+| `backend/api/health.py` | Dernier run par agent — détecte les agents silencieux |
+| `backend/api/dev.py` | Liste complète et stats des runs |
+| `scripts/daily_monitor.py` | Monitoring quotidien |
 
 ---
 
@@ -113,6 +146,17 @@ data/newsfeed.db
 | `comment` | Text | Commentaire optionnel attaché à la réaction |
 | `created_at` | DateTime UTC | Timestamp |
 
+**Qui écrit :** `backend/api/feedback.py` — `POST /api/feedback/<id>` déclenché par l'utilisateur dans l'interface
+
+**Qui lit :**
+| Fichier | Pourquoi |
+|---------|----------|
+| `processors/scorer.py` | Lit les likes/dislikes des 30 derniers jours pour pondérer le score de catégorie |
+| `backend/api/feedback.py` | `GET /api/feedback/<id>` — retourne les réactions sur un article |
+| `backend/api/dev.py` | Stats globales (distribution like/dislike/skip) |
+| `backend/api/health.py` | Compteur total de feedbacks |
+| `view_comments.py` | Outil CLI de visualisation |
+
 ---
 
 ### `news_comments` — 43 lignes
@@ -126,6 +170,15 @@ data/newsfeed.db
 | `body` | Text | Texte de la note (max 2000 car.) |
 | `created_at` | DateTime UTC | Timestamp |
 
+**Qui écrit :** `backend/api/comments.py` — `POST /api/comments/<id>` déclenché par l'utilisateur dans l'interface
+
+**Qui lit :**
+| Fichier | Pourquoi |
+|---------|----------|
+| `backend/api/comments.py` | `GET /api/comments/<id>` — retourne les notes sur un article |
+| `backend/api/dev.py` | Stats et recherche plein texte dans les commentaires |
+| `view_comments.py` | Outil CLI de visualisation |
+
 ---
 
 ### `bug_reports` — 10 lignes
@@ -138,6 +191,13 @@ data/newsfeed.db
 | `description` | Text | Description du problème (max 5000 car.) |
 | `context` | Text (JSON) | `article_id`, `article_title`, `user_agent`, `timestamp` |
 | `created_at` | DateTime UTC | Timestamp de soumission |
+
+**Qui écrit :** `backend/api/bugs.py` — `POST /api/bugs` déclenché par l'utilisateur via le menu ⋮
+
+**Qui lit :**
+| Fichier | Pourquoi |
+|---------|----------|
+| `backend/api/dev.py` | Liste chronologique et stats hebdomadaires |
 
 ---
 
@@ -161,6 +221,10 @@ data/newsfeed.db
 | `proposed_fix` | Text | Correction proposée |
 | `created_at` / `updated_at` / `closed_at` | DateTime | Cycle de vie |
 
+**Qui écrit :** `backend/api/aftersales.py` — `POST /api/aftersales/ecr` + `POST /api/aftersales/seed` (initialisation depuis l'analyse Mai 2026)
+
+**Qui lit :** `backend/api/aftersales.py` — `GET /api/aftersales/ecr` et vue admin (`GET /api/aftersales/overview`)
+
 ---
 
 ### `mca` — Mises à jour Contexte Agent
@@ -176,6 +240,10 @@ data/newsfeed.db
 | `description` | Text | Ce qui doit changer |
 | `justification` | Text | Pourquoi ce changement |
 | `blocking_ecr_id` | Integer FK → `ecr` | ECR bloquant si applicable |
+
+**Qui écrit :** `backend/api/aftersales.py` — `POST /api/aftersales/mca` + `POST /api/aftersales/seed`
+
+**Qui lit :** `backend/api/aftersales.py` — `GET /api/aftersales/mca` et vue admin
 
 ---
 
@@ -195,11 +263,19 @@ data/newsfeed.db
 | `ecr_id` | FK → `ecr` | ECR créé si décision = ecr |
 | `mca_id` | FK → `mca` | MCA créé si décision = mca |
 
+**Qui écrit :** `backend/api/aftersales.py` — `POST /api/aftersales/investigations`
+
+**Qui lit :** `backend/api/aftersales.py` — `GET /api/aftersales/investigations` et vue admin
+
 ---
 
 ### `ecr_status_history` et `mca_status_history` — Audit trails
 
 **But** : Enregistrent chaque changement de statut d'un ECR ou MCA avec la date, l'ancien statut, le nouveau statut et une note. Permet de retracer l'historique complet d'un ticket.
+
+**Qui écrit :** `backend/api/aftersales.py` — automatiquement lors de `PATCH /api/aftersales/ecr/<id>/status` ou `PATCH /api/aftersales/mca/<id>/status`
+
+**Qui lit :** `backend/api/aftersales.py` — `GET /api/aftersales/ecr/<id>/history`
 
 ---
 
