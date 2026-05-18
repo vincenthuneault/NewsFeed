@@ -107,26 +107,88 @@ youtube:
 
 # --- RSS ---
 rss:
-  max_age_hours: 48
-  max_per_feed: 10
+  max_age_hours: 48    # Fenêtre de collecte brute — les agents filtrent ensuite par fraîcheur
+  max_per_feed: 15     # Plus large pour fournir de bons candidats au LLM de chaque journaliste
   feeds:
     tech_ai:
       - url: "https://feeds.arstechnica.com/arstechnica/technology-lab"
         name: "Ars Technica"
-      - url: "https://www.theverge.com/rss/index.xml"
-        name: "The Verge"
+      # The Verge retiré — paywall systématique, blacklisté dans content_gate
+
     politique_ca:
       - url: "https://ici.radio-canada.ca/rss/4159"
         name: "Radio-Canada Politique"
+      - url: "https://rss.cbc.ca/lineup/politics.xml"
+        name: "CBC Politics"
+      - url: "https://www.lapresse.ca/actualites/politique/rss"
+        name: "La Presse Politique"
+      - url: "https://www.ledevoir.com/rss/section/politique/canada.xml"
+        name: "Le Devoir — Canada"
+      - url: "https://lactualite.com/feed/"
+        name: "L'Actualité"
+
     politique_qc:
       - url: "https://ici.radio-canada.ca/rss/4201"
         name: "Radio-Canada Québec"
+      - url: "https://www.ledevoir.com/rss/section/politique/quebec.xml"
+        name: "Le Devoir — Québec"
+      - url: "https://www.lapresse.ca/actualites/politique/rss"
+        name: "La Presse Politique"
+      - url: "https://lactualite.com/feed/"
+        name: "L'Actualité"
+
+    politique_intl:
+      - url: "https://ici.radio-canada.ca/rss/4171"
+        name: "Radio-Canada International"
+      - url: "https://www.rfi.fr/fr/rss-actus-internationales"
+        name: "RFI"
+      - url: "https://www.france24.com/fr/rss"
+        name: "France 24"
+      - url: "https://feeds.bbci.co.uk/news/world/rss.xml"
+        name: "BBC World News"
+      - url: "https://www.theguardian.com/world/rss"
+        name: "The Guardian World"
+      - url: "https://www.lemonde.fr/international/rss_full.xml"
+        name: "Le Monde International"
+
+    evenements_mtl:
+      - url: "https://ici.radio-canada.ca/rss/4169"
+        name: "RC Montréal"
+      - url: "https://ici.radio-canada.ca/rss/4175"
+        name: "RC Arts & culture"
+      - url: "https://ici.radio-canada.ca/rss/4503"
+        name: "RC Grand Montréal"
+      - url: "https://voir.ca/feed/"
+        name: "Voir.ca"
+      - url: "https://www.mtlblog.com/feeds/news.rss"
+        name: "MTL Blog"
+
     vehicules_ev:
       - url: "https://electrek.co/feed/"
         name: "Electrek"
+
     spatial:
       - url: "https://spacenews.com/feed/"
         name: "SpaceNews"
+
+# --- Agent local Contrecoeur & Sorel-Tracy ---
+# Sources définies ici plutôt que dans le code pour faciliter la maintenance
+local_contrecoeur:
+  max_age_hours: 72    # Local = moins fréquent, fenêtre plus large (spec journaliste)
+  rss_feeds:
+    - url: "https://www.journallesoir.ca/feed/"
+      name: "Journal Le Soir"
+    - url: "https://www.les2rives.com/feed/"
+      name: "Les 2 Rives"
+    - url: "https://lecontrecourant.ca/feed/"
+      name: "Le Contrecourant"
+  scrape_sources:
+    - url: "https://www.contrecoeur.ca/actualites"
+      name: "Ville de Contrecoeur"
+      base_url: "https://www.contrecoeur.ca"
+    - url: "https://ville.sorel-tracy.qc.ca/actualites"
+      name: "Ville de Sorel-Tracy"
+      base_url: "https://ville.sorel-tracy.qc.ca"
 
 # --- Scoring ---
 scoring:

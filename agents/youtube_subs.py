@@ -1,4 +1,8 @@
-"""Agent YouTube — abonnements (OAuth 2.0) avec fallback tendances CA."""
+"""Agent YouTube — abonnements (OAuth 2.0) avec fallback tendances CA.
+
+Journaliste-YoutubeSub : sélectionne via LLM les vidéos pertinentes des chaînes abonnées.
+Référence : Lecteur de nouvelle/Agents/Journaliste-YoutubeSub.md
+"""
 
 from __future__ import annotations
 
@@ -14,6 +18,42 @@ from core.models import RawNewsItem
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 OAUTH_SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"]
+
+_SYSTEM_PROMPT = """\
+Tu es un journaliste de veille spécialisé dans les chaînes YouTube auxquelles
+l'utilisateur est abonné. L'utilisateur s'intéresse à la politique, la technologie,
+les affaires (business), la science et l'actualité nord-américaine.
+
+## Processus de sélection quotidien
+
+### Étape 1 — Lecture exhaustive
+Parcourir toutes les vidéos publiées aujourd'hui par les chaînes abonnées avant toute
+sélection. Une chaîne qui couvre le même sujet qu'une autre signale un sujet important.
+
+### Étape 2 — Veille de continuité (priorité absolue)
+Chercher si une chaîne publie aujourd'hui une suite ou mise à jour d'un sujet déjà
+présenté dans les 30 derniers jours. Ce type de vidéo est toujours prioritaire.
+
+### Étape 3 — Priorisation
+1. Mise à jour ou suite d'un sujet déjà couvert ce mois-ci — priorité maximale
+2. Vidéo sur un événement d'actualité important publiée aujourd'hui
+3. Analyse ou contenu de fond pertinent sur un sujet d'intérêt
+
+### Étape 4 — Règle d'or : jamais de refus pour contenu insuffisant
+Si la description est vague, contextualiser avec le sujet habituel de la chaîne.
+Tu ne dis jamais "l'information est insuffisante".
+
+## Critères de sélection
+- Vidéo publiée dans les dernières 24 heures par une chaîne abonnée
+- Contenu informatif, analytique ou de fond sur la politique, la tech ou les affaires
+
+## Rejeter si
+- Contenu de gaming, clips musicaux ou variétés sans valeur informationnelle
+- Vidéo promotionnelle sans contenu substantiel
+- Contenu ciblant un jeune public
+
+Quota : maximum 5 vidéos par jour.\
+"""
 
 
 def _parse_iso_duration(duration: str) -> int:
@@ -38,23 +78,37 @@ class YouTubeSubsAgent(BaseAgent):
         self._api_key: str | None = yt.get("api_key")
         self._max_results: int = yt.get("max_results_per_channel", 10)
         self._max_age_hours: int = yt.get("max_age_hours", 48)
+        self._max_items: int = config.get("app", {}).get("max_articles_per_agent", 5)
 
     def collect(self) -> list[RawNewsItem]:
         oauth_path = PROJECT_ROOT / "secrets" / "youtube_oauth.json"
         if oauth_path.exists():
             try:
-                return self._collect_subscriptions(oauth_path)
+                raw = self._collect_subscriptions(oauth_path)
             except Exception as exc:
                 self._log.warning(
                     "OAuth échoué, fallback tendances",
                     extra={"agent": self.name, "error": str(exc)},
                 )
-
-        if not self._api_key:
+                raw = self._collect_trending() if self._api_key else []
+        elif self._api_key:
+            raw = self._collect_trending()
+        else:
             self._log.error("Ni OAuth ni API key configurés", extra={"agent": self.name})
             return []
 
-        return self._collect_trending()
+        # Déduplication historique
+        submitted = self._load_submitted_urls()
+        items = [i for i in raw if i.source_url not in submitted]
+
+        # Filtre fraîcheur
+        items = self._filter_by_freshness(items, self._max_age_hours)
+
+        if not items:
+            return []
+
+        # Sélection LLM journaliste
+        return self._llm_select(items, _SYSTEM_PROMPT, "youtube_subs", self._max_items)
 
     # ------------------------------------------------------------------
     # OAuth — abonnements
@@ -93,10 +147,6 @@ class YouTubeSubsAgent(BaseAgent):
             if len(items) >= 50:
                 break
 
-        self._log.info(
-            "Collecte abonnements terminée",
-            extra={"agent": self.name, "items": len(items)},
-        )
         return items
 
     def _get_subscription_channel_ids(self, service) -> list[str]:
@@ -137,10 +187,10 @@ class YouTubeSubsAgent(BaseAgent):
             .execute()
         )
 
-        return [self._video_to_raw(item, "youtube_subs") for item in details.get("items", [])]
+        return [self._video_to_raw(item) for item in details.get("items", [])]
 
     # ------------------------------------------------------------------
-    # API key — tendances
+    # API key — tendances (fallback)
     # ------------------------------------------------------------------
 
     def _collect_trending(self) -> list[RawNewsItem]:
@@ -164,19 +214,15 @@ class YouTubeSubsAgent(BaseAgent):
             )
             if published < cutoff:
                 continue
-            items.append(self._video_to_raw(item, "youtube_trending"))
+            items.append(self._video_to_raw(item))
 
-        self._log.info(
-            "Collecte tendances terminée",
-            extra={"agent": self.name, "items": len(items)},
-        )
         return items
 
     # ------------------------------------------------------------------
     # Conversion commune
     # ------------------------------------------------------------------
 
-    def _video_to_raw(self, item: dict, category: str) -> RawNewsItem:
+    def _video_to_raw(self, item: dict) -> RawNewsItem:
         snippet = item["snippet"]
         stats = item.get("statistics", {})
         video_id = item["id"]
@@ -194,7 +240,7 @@ class YouTubeSubsAgent(BaseAgent):
             title=snippet["title"],
             source_url=f"https://www.youtube.com/watch?v={video_id}",
             source_name=snippet.get("channelTitle", "YouTube"),
-            category=category,
+            category="youtube_subs",
             published_at=datetime.fromisoformat(
                 snippet["publishedAt"].replace("Z", "+00:00")
             ),

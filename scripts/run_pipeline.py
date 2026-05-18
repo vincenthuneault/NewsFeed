@@ -66,14 +66,10 @@ def main(dry_run: bool = False) -> int:
             log.error("Aucun item collecté — pipeline abandonné")
             return 1
 
-        # 3. Déduplication intra-journée
-        from core.deduplicator import Deduplicator
-        deduped = Deduplicator(config).deduplicate(raw_items)
-
-        log.info("Déduplication terminée", extra={
-            "avant": len(raw_items),
-            "après": len(deduped),
-        })
+        # 3. Agrégation — la déduplication est distribuée aux agents (chaque journaliste
+        #    vérifie son historique DB et applique son filtre de fraîcheur)
+        deduped = raw_items
+        log.info("Agrégation agents terminée", extra={"items": len(deduped)})
 
         # 4. Pipeline : gate → résumés → Chef de nouvelles → image → TTS → DB
         from core.pipeline import Pipeline

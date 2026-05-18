@@ -145,7 +145,7 @@ class Pipeline:
     def _upsert_item(
         self, session, raw: RawNewsItem, editorial_note: str | None
     ) -> NewsItem | None:
-        """Insère ou met à jour un NewsItem. Retourne l'instance."""
+        """Insère ou met à jour un NewsItem. Retourne l'instance si elle doit figurer dans le DailyFeed."""
         existing = (
             session.query(NewsItem).filter_by(source_url=raw.source_url).first()
         )
@@ -162,7 +162,9 @@ class Pipeline:
             if editorial_note is not None:
                 existing.editorial_note = editorial_note
             existing.updated_at = datetime.now(timezone.utc)
-            return existing
+            # Inclure dans le DailyFeed uniquement si l'article a été créé aujourd'hui
+            # Évite de recycler un article de la veille dans le fil d'aujourd'hui
+            return existing if existing.created_at.date() == date.today() else None
 
         item = NewsItem(
             title=raw.title,
