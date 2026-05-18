@@ -37,22 +37,35 @@ class TTSGenerator(BaseProcessor):
         self._session = google.auth.transport.requests.AuthorizedSession(credentials)
 
         self._language_code = tts.get("language_code", "fr-CA")
-        self._voice_name = tts.get("voice_name", "Achernar")
+        self._default_voice = tts.get("voice_name", "Achernar")
+        self._voices_by_category: dict[str, str] = tts.get("voices_by_category", {})
+        self._style_prompts_by_voice: dict[str, str] = tts.get("style_prompts_by_voice", {})
         self._model_name = tts.get("model_name", "gemini-2.5-pro-tts")
+        self._speaking_rate: float = tts.get("speaking_rate", 1.0)
         self._tts_prompt = tts.get("tts_prompt", "")
 
         AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
+    def _voice_for(self, category: str) -> str:
+        return self._voices_by_category.get(category, self._default_voice)
+
+    def _prompt_for(self, voice_name: str) -> str:
+        return self._style_prompts_by_voice.get(voice_name) or self._tts_prompt
+
     def process(self, items: list) -> list:
         for item in items:
-            text = item.summary_fr or item.description or item.title
+            summary = item.summary_fr or item.description or ""
+            title = item.title or ""
+            text = f"{title}. {summary}".strip(". ") if title else summary
             if not text:
                 continue
+            voice = self._voice_for(getattr(item, "category", ""))
+            prompt = self._prompt_for(voice)
             try:
-                item.audio_path = self._generate(text, item.source_url)
+                item.audio_path = self._generate(text, item.source_url, voice, prompt)
                 self._log.info(
                     "Audio généré",
-                    extra={"processor": self.name, "path": item.audio_path},
+                    extra={"processor": self.name, "path": item.audio_path, "voice": voice},
                 )
             except Exception as exc:
                 self._log.error(
@@ -61,7 +74,7 @@ class TTSGenerator(BaseProcessor):
                 )
         return items
 
-    def _generate(self, text: str, source_url: str) -> str:
+    def _generate(self, text: str, source_url: str, voice_name: str, tts_prompt: str = "") -> str:
         text = text[:_MAX_CHARS]
         url_hash = hashlib.md5(source_url.encode()).hexdigest()[:16]
         dest = AUDIO_DIR / f"{url_hash}.mp3"
@@ -70,16 +83,16 @@ class TTSGenerator(BaseProcessor):
             return str(dest.relative_to(PROJECT_ROOT))
 
         payload: dict = {
-            "audioConfig": {"audioEncoding": "MP3"},
+            "audioConfig": {"audioEncoding": "MP3", "speakingRate": self._speaking_rate},
             "input": {"text": text},
             "voice": {
                 "languageCode": self._language_code,
                 "modelName": self._model_name,
-                "name": self._voice_name,
+                "name": voice_name,
             },
         }
-        if self._tts_prompt:
-            payload["input"]["prompt"] = self._tts_prompt
+        if tts_prompt:
+            payload["input"]["prompt"] = tts_prompt
 
         response = self._session.post(_TTS_URL, json=payload)
         response.raise_for_status()
