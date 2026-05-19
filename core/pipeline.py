@@ -13,6 +13,7 @@ from core.models import (
     get_session,
     init_db,
 )
+from processors.article_fetcher import ArticleFetcher
 from processors.content_gate import ContentGate
 from processors.image_extractor import ImageExtractor
 from processors.summarizer import Summarizer
@@ -34,6 +35,7 @@ class Pipeline:
     def __init__(self, config: dict) -> None:
         self._config = config
         self._log = get_logger("core.pipeline", config.get("logging"))
+        self._article_fetcher = ArticleFetcher(config)
         self._content_gate = ContentGate(config)
         self._summarizer = Summarizer(config)
         self._image_extractor = ImageExtractor(config)
@@ -59,19 +61,22 @@ class Pipeline:
 
         self._log.info("Pipeline démarré", extra={"candidats": len(raw_items)})
 
-        # 1. Gate technique — exclure articles inutilisables
-        items = self._content_gate.process(raw_items)
+        # 1. Fetch contenu complet — enrichit raw_content avec le texte réel de l'article
+        items = self._article_fetcher.process(raw_items)
+
+        # 2. Gate technique — exclure articles inutilisables (paywalls, vidéos sans texte)
+        items = self._content_gate.process(items)
         self._log.info("Gate technique terminée", extra={"restants": len(items)})
 
         if not items:
             self._log.error("Gate technique a tout filtré — pipeline abandonné")
             return []
 
-        # 2. Summarisation — tous les candidats
+        # 3. Summarisation — tous les candidats (sur le texte complet désormais)
         items = self._summarizer.process(items)
         self._log.info("Résumés générés", extra={"items": len(items)})
 
-        # 3. Chef de nouvelles — sélection éditoriale + ordonnancement
+        # 4. Chef de nouvelles — sélection éditoriale + ordonnancement
         selected, rejected_notes = self._chef.select(items)
         self._log.info(
             "Chef de nouvelles terminé",
@@ -82,15 +87,15 @@ class Pipeline:
             self._log.error("Chef de nouvelles n'a sélectionné aucun article")
             return []
 
-        # 4. Image — uniquement sur les sélectionnés
+        # 5. Image — uniquement sur les sélectionnés
         selected = self._image_extractor.process(selected)
         self._log.info("Images extraites", extra={"items": len(selected)})
 
-        # 5. TTS — uniquement sur les sélectionnés
+        # 6. TTS — uniquement sur les sélectionnés
         selected = self._tts.process(selected)
         self._log.info("Audio généré", extra={"items": len(selected)})
 
-        # 6. Sauvegarde DB
+        # 7. Sauvegarde DB
         news_items = self._save_to_db(selected, rejected_notes, items)
         self._log.info("Pipeline terminé", extra={"publiés": len(news_items)})
         return news_items

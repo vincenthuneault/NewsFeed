@@ -212,11 +212,20 @@ deduplication:
   fuzzy_threshold: 80  # Seuil rapidfuzz (0-100)
   max_duplicate_ratio: 0.30  # Alerte si > 30% doublons
 
-# --- Gate technique (avant summarisation) ---
+# --- Fetch du contenu complet (avant gate et summarisation) ---
+# Enrichit raw_content avec le texte réel de l'article (vs court extrait RSS).
+# Utilise trafilatura pour extraire le texte principal en ignorant nav/pubs/commentaires.
+article_fetcher:
+  timeout_seconds: 10     # Timeout par requête HTTP
+  max_workers: 8          # Nombre de fetches en parallèle
+  max_content_chars: 8000 # Tronquer avant passage au Summarizer (évite tokens excessifs)
+
+# --- Gate technique (après fetch, avant summarisation) ---
 # Filtre les articles techniquement inutilisables avant d'appeler Claude.
 # Le Chef de nouvelles ne voit que les articles ayant passé cette gate.
 content_gate:
-  min_raw_content_chars: 300        # raw_content trop court → article vide ou paywall
+  min_raw_content_chars: 50         # Bloque les articles vraiment vides (YouTube sans description, paywall)
+                                    # Les extraits RSS légitimes (RC, BBC, La Presse) font 80-295 chars
   blacklisted_domains:
     - theverge.com                  # Paywall systématique
   title_patterns_rejected:
