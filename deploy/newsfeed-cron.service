@@ -11,7 +11,7 @@ WorkingDirectory=/home/vhds/NewsFeed
 EnvironmentFile=/home/vhds/NewsFeed/secrets/.env
 ExecStart=/home/vhds/NewsFeed/venv/bin/python \
     /home/vhds/NewsFeed/scripts/run_pipeline.py
-TimeoutStartSec=900
+TimeoutStartSec=1800
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=newsfeed-cron
