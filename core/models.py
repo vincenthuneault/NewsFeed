@@ -111,7 +111,9 @@ class NewsItem(Base):
     image_path = Column(String(500), nullable=True)
     audio_path = Column(String(500), nullable=True)
     final_score = Column(Float, default=0.0, index=True)
-    editorial_note = Column(Text, nullable=True)  # Rempli par Chef de nouvelles pour les articles rejetés
+    editorial_note = Column(Text, nullable=True)
+    pipeline_status = Column(String(20), nullable=False, default="published")
+    # Valeurs : "proposed" | "published" | "rejected_chef"
 
     # Timestamps
     created_at = Column(
@@ -238,7 +240,7 @@ class ECR(Base):
     ecr_number   = Column(String(20), nullable=False, unique=True, index=True)
     title        = Column(String(500), nullable=False)
     status       = Column(String(30), nullable=False, default="a_transmettre", index=True)
-    # a_transmettre | en_cours | corrige | annule
+    # a_transmettre | en_cours | en_observation | corrige | annule
     priority     = Column(String(10), nullable=False, default="normale")
     # haute | normale | basse
     severity     = Column(String(10), nullable=False, default="normale")
@@ -251,8 +253,9 @@ class ECR(Base):
     updated_at = Column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc))
     closed_at  = Column(DateTime, nullable=True)
 
-    status_history = relationship("ECRStatusHistory", back_populates="ecr", cascade="all, delete-orphan")
-    investigations = relationship("Investigation", back_populates="ecr", foreign_keys="Investigation.ecr_id")
+    status_history   = relationship("ECRStatusHistory", back_populates="ecr", cascade="all, delete-orphan")
+    investigations   = relationship("Investigation", back_populates="ecr", foreign_keys="Investigation.ecr_id")
+    engineering_docs = relationship("EngineeringDocument", back_populates="ecr")
 
     def __repr__(self) -> str:
         return f"<ECR({self.ecr_number}, status='{self.status}')>"
@@ -340,6 +343,41 @@ class MCAStatusHistory(Base):
     changed_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     mca = relationship("MCA", back_populates="status_history")
+
+
+class EngineeringDocument(Base):
+    """Document produit par le pipeline d'ingénierie.
+
+    Types : package | product_brief | sfd | icd | arbitrage | req | dvp
+    Numérotation : PKG-001, PB-ECR017, SFD-ECR017-IS6, ICD-ECR017-IS6,
+                   ARB-ECR017, REQ-ECR017-IS6, DVP-ECR017-IS6
+    """
+
+    __tablename__ = "engineering_documents"
+
+    id         = Column(Integer, primary_key=True, autoincrement=True)
+    doc_number = Column(String(40), nullable=False, unique=True, index=True)
+    doc_type   = Column(String(20), nullable=False, index=True)
+
+    ecr_id    = Column(Integer, ForeignKey("ecr.id"), nullable=True, index=True)
+    is_domain = Column(String(10), nullable=True)  # IS-1..IS-6 | null pour AP
+
+    title        = Column(String(500), nullable=True)
+    content      = Column(Text, nullable=True)  # JSON structuré par doc_type
+    status       = Column(String(20), nullable=False, default="soumis")
+    # soumis | approuve | rejete | en_revision
+    review_notes = Column(Text, nullable=True)
+    version      = Column(Integer, nullable=False, default=1)
+    parent_id    = Column(Integer, ForeignKey("engineering_documents.id"), nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc))
+
+    ecr    = relationship("ECR", back_populates="engineering_docs")
+    parent = relationship("EngineeringDocument", remote_side=[id], backref="revisions")
+
+    def __repr__(self) -> str:
+        return f"<EngineeringDocument({self.doc_number}, type='{self.doc_type}', status='{self.status}')>"
 
 
 # ============================================================

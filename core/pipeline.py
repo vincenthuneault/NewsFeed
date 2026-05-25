@@ -1,4 +1,4 @@
-"""Pipeline séquentiel : RawNewsItem → gate → résumé → sélection éditoriale → image → audio → DB."""
+"""Pipeline séquentiel : RawNewsItem → gate → résumé → DB → sélection éditoriale → audio → ready."""
 
 from __future__ import annotations
 
@@ -24,12 +24,16 @@ class Pipeline:
     """Enchaîne les processeurs et persiste les résultats en DB.
 
     Ordre d'exécution :
-    1. ContentGate  — rejette les articles techniquement inutilisables
-    2. Summarizer   — génère summary_fr pour tous les candidats restants
-    3. ChefDeNouvelles — sélection éditoriale + ordonnancement (≤ max_feed_items)
-    4. ImageExtractor  — uniquement pour les articles sélectionnés
-    5. TTSGenerator    — uniquement pour les articles sélectionnés
-    6. _save_to_db     — persiste tout en DB, crée DailyFeed avec l'ordre éditorial
+    1. ArticleFetcher    — enrichit raw_content avec le texte complet de l'article
+    2. ContentGate       — rejette les articles techniquement inutilisables
+    3. Summarizer        — génère summary_fr pour tous les candidats restants
+    ✦  SAVE proposed     — tous les candidats résumés → news_items (pipeline_status="proposed")
+    4. ChefDeNouvelles   — sélection éditoriale + ordonnancement (≤ max_feed_items)
+    ✦  UPDATE statuses   — selected → "published", rejected → "rejected_chef" + editorial_note
+    ✦  CREATE DailyFeed  — status="generating", item_ids dans l'ordre éditorial
+    5. ImageExtractor    — uniquement pour les articles sélectionnés
+    6. TTSGenerator      — article par article, commit immédiat après chaque audio
+    ✦  UPDATE DailyFeed  — status="ready"
     """
 
     def __init__(self, config: dict) -> None:
@@ -61,10 +65,10 @@ class Pipeline:
 
         self._log.info("Pipeline démarré", extra={"candidats": len(raw_items)})
 
-        # 1. Fetch contenu complet — enrichit raw_content avec le texte réel de l'article
+        # 1. Fetch contenu complet
         items = self._article_fetcher.process(raw_items)
 
-        # 2. Gate technique — exclure articles inutilisables (paywalls, vidéos sans texte)
+        # 2. Gate technique
         items = self._content_gate.process(items)
         self._log.info("Gate technique terminée", extra={"restants": len(items)})
 
@@ -72,144 +76,156 @@ class Pipeline:
             self._log.error("Gate technique a tout filtré — pipeline abandonné")
             return []
 
-        # 3. Summarisation — tous les candidats (sur le texte complet désormais)
+        # 3. Summarisation — tous les candidats
         items = self._summarizer.process(items)
         self._log.info("Résumés générés", extra={"items": len(items)})
 
-        # 4. Chef de nouvelles — sélection éditoriale + ordonnancement
-        selected, rejected_notes = self._chef.select(items)
-        self._log.info(
-            "Chef de nouvelles terminé",
-            extra={"sélectionnés": len(selected), "rejetés": len(rejected_notes)},
-        )
-
-        if not selected:
-            self._log.error("Chef de nouvelles n'a sélectionné aucun article")
-            return []
-
-        # 5. Image — uniquement sur les sélectionnés
-        selected = self._image_extractor.process(selected)
-        self._log.info("Images extraites", extra={"items": len(selected)})
-
-        # 6. TTS — uniquement sur les sélectionnés
-        selected = self._tts.process(selected)
-        self._log.info("Audio généré", extra={"items": len(selected)})
-
-        # 7. Sauvegarde DB
-        news_items = self._save_to_db(selected, rejected_notes, items)
-        self._log.info("Pipeline terminé", extra={"publiés": len(news_items)})
-        return news_items
-
-    def _save_to_db(
-        self,
-        selected: list[RawNewsItem],
-        rejected_notes: dict[str, str],
-        all_candidates: list[RawNewsItem],
-    ) -> list[NewsItem]:
-        """Persiste tous les articles en DB et crée le DailyFeed.
-
-        - selected : articles retenus par le Chef, avec image/audio, dans l'ordre éditorial
-        - rejected_notes : {source_url → editorial_note} pour les articles rejetés
-        - all_candidates : tous les candidats post-summarisation (pour sauvegarder les rejetés)
-        """
+        # --- Ouverture de la session DB — reste ouverte jusqu'à la fin ---
         session = get_session(self._session_factory)
-        published: list[NewsItem] = []
-
         try:
-            # Sauvegarder les articles sélectionnés (avec image + audio)
-            selected_urls = {item.source_url for item in selected}
-            for raw in selected:
-                news_item = self._upsert_item(session, raw, editorial_note=None)
-                if news_item:
-                    published.append(news_item)
+            # ✦ SAVE — tous les candidats résumés (pipeline_status="proposed")
+            db_map = self._save_proposed(items, session)
+            session.commit()
+            self._log.info("Candidats sauvegardés en DB", extra={"items": len(db_map)})
 
-            # Sauvegarder les articles rejetés (sans image/audio, avec editorial_note)
-            for raw in all_candidates:
-                if raw.source_url in selected_urls:
-                    continue  # Déjà sauvegardé ci-dessus
-                note = rejected_notes.get(raw.source_url)
-                if note:
-                    self._upsert_item(session, raw, editorial_note=note)
+            # 4. Chef de nouvelles
+            selected_raw, rejected_notes = self._chef.select(items)
+            self._log.info(
+                "Chef de nouvelles terminé",
+                extra={"sélectionnés": len(selected_raw), "rejetés": len(rejected_notes)},
+            )
 
+            if not selected_raw:
+                self._log.error("Chef de nouvelles n'a sélectionné aucun article")
+                return []
+
+            # ✦ UPDATE statuses + CREATE DailyFeed (status="generating")
+            published_db = self._apply_chef_decisions(selected_raw, rejected_notes, db_map, session)
             session.commit()
 
-            # Créer le DailyFeed dans l'ordre éditorial du Chef de nouvelles
-            self._create_daily_feed(session, published)
+            # 5. Image extraction — sur les sélectionnés uniquement
+            selected_raw = self._image_extractor.process(selected_raw)
+            for raw in selected_raw:
+                db_item = db_map.get(raw.source_url)
+                if db_item and raw.image_path:
+                    db_item.image_path = raw.image_path
+                    db_item.updated_at = datetime.now(timezone.utc)
             session.commit()
+            self._log.info("Images extraites", extra={"items": len(selected_raw)})
+
+            # 6. TTS — article par article, commit immédiat après chaque audio
+            for raw in selected_raw:
+                self._tts.process_one(raw)
+                db_item = db_map.get(raw.source_url)
+                if db_item and raw.audio_path:
+                    db_item.audio_path = raw.audio_path
+                    db_item.updated_at = datetime.now(timezone.utc)
+                    session.commit()
+
+            self._log.info("Audio généré", extra={"items": len(selected_raw)})
+
+            # ✦ DailyFeed → ready
+            today = date.today().isoformat()
+            feed = session.query(DailyFeed).filter_by(date=today).first()
+            if feed:
+                feed.status = "ready"
+                feed.updated_at = datetime.now(timezone.utc)
+                session.commit()
+
             session.expunge_all()
+            self._log.info("Pipeline terminé", extra={"publiés": len(published_db)})
+            return published_db
 
         except Exception as exc:
             session.rollback()
-            self._log.error("Erreur sauvegarde DB", extra={"error": str(exc)})
+            self._log.error("Erreur pipeline DB", extra={"error": str(exc)})
             raise
         finally:
             session.close()
 
-        return published
+    def _save_proposed(
+        self, items: list[RawNewsItem], session
+    ) -> dict[str, NewsItem]:
+        """Insère ou met à jour tous les candidats résumés. Retourne {source_url: NewsItem}."""
+        db_map: dict[str, NewsItem] = {}
 
-    def _upsert_item(
-        self, session, raw: RawNewsItem, editorial_note: str | None
-    ) -> NewsItem | None:
-        """Insère ou met à jour un NewsItem. Retourne l'instance si elle doit figurer dans le DailyFeed."""
-        existing = (
-            session.query(NewsItem).filter_by(source_url=raw.source_url).first()
-        )
-        if existing:
-            # Mettre à jour les champs pipeline si l'item existait déjà
-            if raw.summary_fr:
-                existing.summary_fr = raw.summary_fr
-            if raw.image_path:
-                existing.image_path = raw.image_path
-            if raw.audio_path:
-                existing.audio_path = raw.audio_path
-            if raw.final_score:
-                existing.final_score = raw.final_score
-            if editorial_note is not None:
-                existing.editorial_note = editorial_note
-            existing.updated_at = datetime.now(timezone.utc)
-            # Inclure dans le DailyFeed uniquement si l'article a été créé aujourd'hui
-            # Évite de recycler un article de la veille dans le fil d'aujourd'hui
-            return existing if existing.created_at.date() == date.today() else None
+        for raw in items:
+            existing = session.query(NewsItem).filter_by(source_url=raw.source_url).first()
+            if existing:
+                if raw.summary_fr:
+                    existing.summary_fr = raw.summary_fr
+                if raw.raw_content:
+                    existing.raw_content = raw.raw_content
+                existing.pipeline_status = "proposed"
+                existing.updated_at = datetime.now(timezone.utc)
+                db_map[raw.source_url] = existing
+            else:
+                item = NewsItem(
+                    title=raw.title,
+                    source_url=raw.source_url,
+                    source_name=raw.source_name,
+                    category=raw.category,
+                    published_at=raw.published_at,
+                    description=raw.description,
+                    image_url=raw.image_url,
+                    video_url=raw.video_url,
+                    video_type=raw.video_type,
+                    raw_content=raw.raw_content,
+                    popularity_score=raw.popularity_score,
+                    summary_fr=raw.summary_fr,
+                    final_score=raw.final_score,
+                    pipeline_status="proposed",
+                )
+                session.add(item)
+                session.flush()
+                db_map[raw.source_url] = item
 
-        item = NewsItem(
-            title=raw.title,
-            source_url=raw.source_url,
-            source_name=raw.source_name,
-            category=raw.category,
-            published_at=raw.published_at,
-            description=raw.description,
-            image_url=raw.image_url,
-            video_url=raw.video_url,
-            video_type=raw.video_type,
-            raw_content=raw.raw_content,
-            popularity_score=raw.popularity_score,
-            summary_fr=raw.summary_fr,
-            image_path=raw.image_path,
-            audio_path=raw.audio_path,
-            final_score=raw.final_score,
-            editorial_note=editorial_note,
-        )
-        session.add(item)
-        session.flush()  # Obtenir l'ID immédiatement
-        return item
+        return db_map
 
-    def _create_daily_feed(self, session, items: list[NewsItem]) -> None:
-        """Crée ou met à jour le DailyFeed avec les IDs dans l'ordre éditorial."""
+    def _apply_chef_decisions(
+        self,
+        selected_raw: list[RawNewsItem],
+        rejected_notes: dict[str, str],
+        db_map: dict[str, NewsItem],
+        session,
+    ) -> list[NewsItem]:
+        """Met à jour les statuts post-Chef et crée le DailyFeed (status='generating')."""
+        selected_urls = {raw.source_url for raw in selected_raw}
+        now = datetime.now(timezone.utc)
+
+        # Marquer les sélectionnés
+        published: list[NewsItem] = []
+        for raw in selected_raw:
+            db_item = db_map.get(raw.source_url)
+            if db_item:
+                db_item.pipeline_status = "published"
+                db_item.updated_at = now
+                published.append(db_item)
+
+        # Marquer les rejetés
+        for url, db_item in db_map.items():
+            if url not in selected_urls:
+                db_item.pipeline_status = "rejected_chef"
+                note = rejected_notes.get(url)
+                if note:
+                    db_item.editorial_note = note
+                db_item.updated_at = now
+
+        # Créer ou mettre à jour le DailyFeed
         today = date.today().isoformat()
+        item_ids = [item.id for item in published if item.id]
         feed = session.query(DailyFeed).filter_by(date=today).first()
-        item_ids = [item.id for item in items if item.id]
-
         if feed:
             feed.item_count = len(item_ids)
             feed.item_ids = json.dumps(item_ids)
-            feed.status = "ready"
-            feed.updated_at = datetime.now(timezone.utc)
+            feed.status = "generating"
+            feed.updated_at = now
         else:
-            session.add(
-                DailyFeed(
-                    date=today,
-                    status="ready",
-                    item_count=len(item_ids),
-                    item_ids=json.dumps(item_ids),
-                )
-            )
+            session.add(DailyFeed(
+                date=today,
+                status="generating",
+                item_count=len(item_ids),
+                item_ids=json.dumps(item_ids),
+            ))
+
+        return published

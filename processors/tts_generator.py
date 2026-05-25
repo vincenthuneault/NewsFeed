@@ -52,26 +52,30 @@ class TTSGenerator(BaseProcessor):
     def _prompt_for(self, voice_name: str) -> str:
         return self._style_prompts_by_voice.get(voice_name) or self._tts_prompt
 
+    def process_one(self, item) -> None:
+        """Génère l'audio pour un seul item (mis à jour sur place)."""
+        summary = item.summary_fr or item.description or ""
+        title = item.title or ""
+        text = f"{title}. {summary}".strip(". ") if title else summary
+        if not text:
+            return
+        voice = self._voice_for(getattr(item, "category", ""))
+        prompt = self._prompt_for(voice)
+        try:
+            item.audio_path = self._generate(text, item.source_url, voice, prompt)
+            self._log.info(
+                "Audio généré",
+                extra={"processor": self.name, "path": item.audio_path, "voice": voice},
+            )
+        except Exception as exc:
+            self._log.error(
+                "TTS échoué",
+                extra={"processor": self.name, "url": item.source_url, "error": str(exc)},
+            )
+
     def process(self, items: list) -> list:
         for item in items:
-            summary = item.summary_fr or item.description or ""
-            title = item.title or ""
-            text = f"{title}. {summary}".strip(". ") if title else summary
-            if not text:
-                continue
-            voice = self._voice_for(getattr(item, "category", ""))
-            prompt = self._prompt_for(voice)
-            try:
-                item.audio_path = self._generate(text, item.source_url, voice, prompt)
-                self._log.info(
-                    "Audio généré",
-                    extra={"processor": self.name, "path": item.audio_path, "voice": voice},
-                )
-            except Exception as exc:
-                self._log.error(
-                    "TTS échoué",
-                    extra={"processor": self.name, "error": str(exc)},
-                )
+            self.process_one(item)
         return items
 
     def _generate(self, text: str, source_url: str, voice_name: str, tts_prompt: str = "") -> str:
