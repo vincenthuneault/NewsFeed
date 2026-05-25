@@ -44,19 +44,20 @@ class ImageExtractor(BaseProcessor):
                 item.image_path = self._default_path(item.category)
         return items
 
-    def _extract(self, item: RawNewsItem) -> str:
-        if item.image_url:
-            path = self._download_and_resize(item.image_url)
-            if path:
-                return path
-
-        # Fallback : og:image scraping pour les sources non-YouTube
+    def _extract(self, item) -> str:
+        # Priorité 1 : og:image depuis la page source — image hero haute résolution
         if item.source_url and "youtube.com" not in item.source_url:
             og_url = self._scrape_og_image(item.source_url)
             if og_url:
                 path = self._download_and_resize(og_url)
                 if path:
                     return path
+
+        # Priorité 2 : image_url du flux RSS (miniature, fallback)
+        if item.image_url:
+            path = self._download_and_resize(item.image_url)
+            if path:
+                return path
 
         return self._default_path(item.category)
 
