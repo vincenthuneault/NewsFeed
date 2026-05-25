@@ -18,8 +18,7 @@ _DEFAULT_CREDENTIALS = PROJECT_ROOT / "secrets" / "google_tts_credentials.json"
 _TTS_URL = "https://texttospeech.googleapis.com/v1/text:synthesize"
 _SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
 
-# ~150 mots/min en français ≈ 750 chars/min → 60s ≈ 750 chars
-_MAX_CHARS = 700
+_DEFAULT_MAX_CHARS = 3000  # ~3-4 min à 150 mots/min, speaking_rate 1.4
 
 
 class TTSGenerator(BaseProcessor):
@@ -43,6 +42,7 @@ class TTSGenerator(BaseProcessor):
         self._model_name = tts.get("model_name", "gemini-2.5-pro-tts")
         self._speaking_rate: float = tts.get("speaking_rate", 1.0)
         self._tts_prompt = tts.get("tts_prompt", "")
+        self._max_chars: int = tts.get("max_chars", _DEFAULT_MAX_CHARS)
 
         AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -79,7 +79,7 @@ class TTSGenerator(BaseProcessor):
         return items
 
     def _generate(self, text: str, source_url: str, voice_name: str, tts_prompt: str = "") -> str:
-        text = text[:_MAX_CHARS]
+        text = text[:self._max_chars]
         url_hash = hashlib.md5(source_url.encode()).hexdigest()[:16]
         dest = AUDIO_DIR / f"{url_hash}.mp3"
 
@@ -98,7 +98,7 @@ class TTSGenerator(BaseProcessor):
         if tts_prompt:
             payload["input"]["prompt"] = tts_prompt
 
-        response = self._session.post(_TTS_URL, json=payload)
+        response = self._session.post(_TTS_URL, json=payload, timeout=60)
         response.raise_for_status()
 
         audio_bytes = base64.b64decode(response.json()["audioContent"])
