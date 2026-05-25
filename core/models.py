@@ -149,6 +149,21 @@ class DailyFeed(Base):
         return f"<DailyFeed(date='{self.date}', status='{self.status}')>"
 
 
+class PipelineCheckpoint(Base):
+    """Trace d'exécution du pipeline — une ligne par étape complétée par journée."""
+
+    __tablename__ = "pipeline_checkpoints"
+
+    id            = Column(Integer, primary_key=True, autoincrement=True)
+    run_date      = Column(String(10), nullable=False, index=True)   # YYYY-MM-DD
+    step          = Column(String(50), nullable=False)               # "journalists" | "chef" | "tts" | ...
+    checked_in_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    details       = Column(Text, nullable=True)                      # JSON optionnel
+
+    def __repr__(self) -> str:
+        return f"<PipelineCheckpoint(date='{self.run_date}', step='{self.step}')>"
+
+
 class Feedback(Base):
     """Feedback utilisateur sur une nouvelle."""
 

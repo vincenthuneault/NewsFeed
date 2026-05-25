@@ -1,0 +1,10 @@
+[Unit]
+Description=Lecteur de nouvelle — Timer Recovery 6h30
+Requires=newsfeed-recovery.service
+
+[Timer]
+OnCalendar=*-*-* 06:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -8,6 +8,7 @@ Usage :
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 from datetime import date
@@ -15,6 +16,8 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
+
+LOCK_FILE = Path("/tmp/newsfeed_pipeline.lock")
 
 
 def main(dry_run: bool = False) -> int:
@@ -30,6 +33,7 @@ def main(dry_run: bool = False) -> int:
         log.info("Dry run — arrêt avant collecte")
         return 0
 
+    LOCK_FILE.write_text(str(os.getpid()))
     t_total = time.time()
 
     try:
@@ -88,23 +92,6 @@ def main(dry_run: bool = False) -> int:
 
         print(f"[OK] {date.today()} — {len(news_items)} items en {elapsed:.0f}s ({agents_ok}/{len(reports)} agents)")
 
-        # 5. Agent Aftersales — analyse des signaux utilisateur post-publication
-        try:
-            from agents.aftersales_agent import AftersalesAgent
-            from sqlalchemy import create_engine
-            from sqlalchemy.orm import sessionmaker
-            from core.models import Base
-
-            db_url = config.get("database", {}).get("url", "sqlite:///data/newsfeed.db")
-            engine = create_engine(db_url)
-            Base.metadata.create_all(engine)
-            af_session = sessionmaker(bind=engine)()
-            AftersalesAgent(config).run(af_session)
-            af_session.close()
-        except Exception as exc:
-            # L'Aftersales est non-bloquant — le pipeline est déjà terminé
-            log.warning("Agent Aftersales échoué (non bloquant)", extra={"error": str(exc)})
-
         return 0
 
     except Exception as exc:
@@ -112,6 +99,9 @@ def main(dry_run: bool = False) -> int:
         import traceback
         traceback.print_exc()
         return 1
+
+    finally:
+        LOCK_FILE.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
