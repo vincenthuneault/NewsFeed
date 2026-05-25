@@ -99,15 +99,19 @@ class AftersalesAgent:
         self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
 
-    def run(self, session: Session) -> dict:
+    def run(self, session: Session, since: datetime | None = None) -> dict:
         """Traite tous les signaux non investigués depuis le dernier cycle.
+
+        Args:
+            since: Si fourni, traite les signaux depuis ce timestamp.
+                   Sinon, utilise le timestamp de la dernière investigation.
 
         Retourne un résumé : {investigations: N, ecrs: N, mcas: N}
         """
         summary = {"investigations": 0, "ecrs": 0, "mcas": 0}
 
         # Déterminer le timestamp du dernier cycle
-        last_run = self._last_run_timestamp(session)
+        last_run = since if since is not None else self._last_run_timestamp(session)
 
         signals = self._collect_signals(session, last_run)
         total = sum(len(v) for v in signals.values())

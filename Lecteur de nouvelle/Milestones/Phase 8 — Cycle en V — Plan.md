@@ -140,9 +140,10 @@ Paramètres à ajouter dans `config.yaml` :
 
 ```yaml
 engineering_process:
-  ecr_prioritization_frequency: "daily"   # daily, weekly, manual
+  ecr_cycle_days: 3                        # cadence Architecte Produit (tous les 3 jours)
   max_dev_retries: 3                       # tentatives développeur
   max_req_modifications: 3                 # cycles révision requis
+  max_ecrs_per_package: 3                  # ECRs max par package d'ingénierie
   beta_enabled: true
   auto_ecr_from_comments: true
   auto_ecr_from_bugs: true

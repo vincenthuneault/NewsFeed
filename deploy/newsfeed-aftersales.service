@@ -1,0 +1,17 @@
+[Unit]
+Description=Lecteur de nouvelle — Aftersales (analyse commentaires et bugs)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=vhds
+Group=vhds
+WorkingDirectory=/home/vhds/NewsFeed
+EnvironmentFile=/home/vhds/NewsFeed/secrets/.env
+ExecStart=/home/vhds/NewsFeed/venv/bin/python \
+    /home/vhds/NewsFeed/scripts/run_aftersales.py
+TimeoutStartSec=600
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=newsfeed-aftersales

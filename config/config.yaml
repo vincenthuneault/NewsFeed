@@ -38,7 +38,7 @@ tts:
     pas de ton monocorde. Tu informes — clairement et agréablement.
   audio_encoding: "MP3"
   speaking_rate: 1.4
-  max_duration_seconds: 60
+  max_chars: 3000
   # credentials dans secrets/google_tts_credentials.json
   # -------------------------------------------------------
   # Voix par catégorie — 1 voix unique par journaliste actif
@@ -54,6 +54,9 @@ tts:
     youtube_subs:      "Kore"       # Journaliste-YoutubeSub
     local_contrecoeur: "Leda"       # Journaliste-Contrecoeur
     viral:             "Puck"       # Journaliste-ShortsTrending
+    tech_ai:           "Fenrir"     # Journaliste-TechAI
+    vehicules_ev:      "Erinome"    # Journaliste-VehiculeEV
+    spatial:           "Sulafat"    # Journaliste-Spatial
   # -------------------------------------------------------
   # Prompt de style par voix — dirige le comportement vocal TTS
   # Ajouter une entrée ici pour toute nouvelle voix

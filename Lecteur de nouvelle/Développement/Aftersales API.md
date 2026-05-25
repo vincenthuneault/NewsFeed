@@ -288,6 +288,6 @@ curl -X PATCH http://localhost:5000/api/aftersales/ecr/3/status \
 - [[Agents/Aftersales]] — processus d'investigation (méthode scientifique)
 - [[Bugs/Backlog]] — vue d'ensemble statique (Obsidian)
 - [[Phase 8 — Cycle en V — Plan]] — processus ingénierie complet
-- [[Architecture/API REST]] — architecture API générale
+- [[API REST]] — architecture API générale
 
 #api #aftersales #ecr #mca #investigation #developpement

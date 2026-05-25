@@ -1,0 +1,14 @@
+[Unit]
+Description=Lecteur de nouvelle — Timer Aftersales 22h00
+Requires=newsfeed-aftersales.service
+
+[Timer]
+# Lance à 22h00 chaque jour (heure locale) — après une journée complète de lecture
+OnCalendar=*-*-* 22:00:00
+# Si le serveur était éteint, rattrape le tir au démarrage
+Persistent=true
+# Délai aléatoire de 0 à 5 min pour éviter les pics de charge
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

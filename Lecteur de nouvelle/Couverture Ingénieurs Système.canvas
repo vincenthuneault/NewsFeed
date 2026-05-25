@@ -1,0 +1,43 @@
+{
+	"nodes":[
+		{"id":"g_is6","type":"group","x":-100,"y":-440,"width":3060,"height":320,"color":"6","label":"IS-6 — Infrastructure & Déploiement"},
+		{"id":"g_is1","type":"group","x":-100,"y":0,"width":840,"height":960,"color":"1","label":"IS-1 — Agents & Collecte"},
+		{"id":"g_is2","type":"group","x":820,"y":0,"width":840,"height":560,"color":"2","label":"IS-2 — Pipeline & Traitement"},
+		{"id":"g_is4","type":"group","x":1740,"y":0,"width":840,"height":560,"color":"4","label":"IS-4 — Backend & Données"},
+		{"id":"g_is3","type":"group","x":820,"y":620,"width":840,"height":440,"color":"3","label":"IS-3 — IA & Contenu"},
+		{"id":"g_is5","type":"group","x":1740,"y":620,"width":840,"height":440,"color":"5","label":"IS-5 — Frontend Mobile"},
+		{"id":"n_wbs","type":"file","file":"Lecteur de nouvelle/WBS.md","x":-80,"y":-420,"width":280,"height":80},
+		{"id":"n_is6","type":"file","file":"Lecteur de nouvelle/Agents/Ingénieur-Infra.md","x":220,"y":-420,"width":340,"height":80},
+		{"id":"t_is6_files","type":"text","text":"config/config.yaml · core/config.py · core/logger.py\ndeploy/gunicorn.conf.py · deploy/newsfeed.service\ndeploy/newsfeed-cron.timer · run_pipeline.py\nbackend/api/health.py · deploy/logrotate.conf","x":580,"y":-420,"width":700,"height":200},
+		{"id":"t_is6_role","type":"text","text":"⏱ Cron 6h00 quotidien\n🔄 Cycle ingénierie tous les 3 jours\n📦 config.yaml → tous les domaines","x":1300,"y":-420,"width":440,"height":200},
+		{"id":"n_is1","type":"file","file":"Lecteur de nouvelle/Agents/Ingénieur-Agents.md","x":-80,"y":20,"width":380,"height":80},
+		{"id":"t_is1_files","type":"text","text":"core/orchestrator.py\nagents/base_agent.py\nagents/rss_generic.py\nagents/events_montreal.py\nagents/local_contrecoeur.py\nagents/youtube_subs.py\nagents/youtube_trending.py\nagents/viral_trending.py","x":-80,"y":120,"width":800,"height":660},
+		{"id":"t_is1_ecr","type":"text","text":"⚠️ ECR-003 · ECR-004 · ECR-005","x":-80,"y":800,"width":800,"height":80},
+		{"id":"n_is2","type":"file","file":"Lecteur de nouvelle/Agents/Ingénieur-Pipeline.md","x":840,"y":20,"width":380,"height":80},
+		{"id":"t_is2_files","type":"text","text":"core/deduplicator.py\nprocessors/scorer.py\ncore/pipeline.py\nprocessors/feed_assembler.py","x":840,"y":120,"width":800,"height":300},
+		{"id":"t_is2_ecr","type":"text","text":"⚠️ ECR-003 · ECR-004","x":840,"y":440,"width":800,"height":60},
+		{"id":"t_is3_files","type":"text","text":"processors/summarizer.py  (Claude Sonnet 4.6)\nprocessors/tts_generator.py  (Google TTS fr-CA)\nprocessors/image_extractor.py","x":840,"y":740,"width":800,"height":200},
+		{"id":"t_is3_ecr","type":"text","text":"⚠️ ECR-004 · ECR-006","x":840,"y":960,"width":800,"height":60},
+		{"id":"n_is4","type":"file","file":"Lecteur de nouvelle/Agents/Ingénieur-Backend.md","x":1760,"y":20,"width":380,"height":80},
+		{"id":"t_is4_files","type":"text","text":"core/models.py\nbackend/app.py\nbackend/api/feed.py · backend/api/feedback.py\nbackend/api/comments.py · backend/api/bugs.py\nbackend/api/settings.py · backend/api/health.py\nbackend/api/aftersales.py\nbackend/auth.py · backend/api/auth.py","x":1760,"y":120,"width":800,"height":360},
+		{"id":"t_is4_ecr","type":"text","text":"⚠️ ECR-007","x":1760,"y":500,"width":800,"height":40},
+		{"id":"n_is5","type":"file","file":"Lecteur de nouvelle/Agents/Ingénieur-Frontend.md","x":1760,"y":640,"width":380,"height":80},
+		{"id":"t_is5_files","type":"text","text":"frontend/index.html · frontend/manifest.json\nfrontend/js/app.js · frontend/js/feed.js\nfrontend/js/ui.js · frontend/js/player.js\nfrontend/js/speech.js · frontend/js/api.js\nfrontend/css/app.css · frontend/sw.js","x":1760,"y":740,"width":800,"height":240},
+		{"id":"t_is5_ecr","type":"text","text":"⚠️ ECR-006 · ECR-007","x":1760,"y":1000,"width":800,"height":40},
+		{"id":"n_is3","type":"file","file":"Lecteur de nouvelle/Agents/Ingénieur-IA.md","x":840,"y":640,"width":380,"height":80}
+	],
+	"edges":[
+		{"id":"e_1_2","fromNode":"n_is1","fromSide":"right","toNode":"n_is2","toSide":"left","label":"list[RawNewsItem]"},
+		{"id":"e_2_3","fromNode":"n_is2","fromSide":"bottom","toNode":"n_is3","toSide":"top","label":"items → enrichissement"},
+		{"id":"e_2_4","fromNode":"n_is2","fromSide":"right","toNode":"n_is4","toSide":"left","label":"NewsItem · DailyFeed (DB)"},
+		{"id":"e_3_4","fromNode":"n_is3","fromSide":"right","toNode":"n_is4","toSide":"bottom","label":"summary_fr · audio_path · image_path"},
+		{"id":"e_4_5","fromNode":"n_is4","fromSide":"bottom","toNode":"n_is5","toSide":"top","label":"JSON REST /api/*"},
+		{"id":"e_5_4","fromNode":"n_is5","fromSide":"left","toNode":"n_is4","toSide":"right","label":"feedback · comments · bugs"},
+		{"id":"e_4_2","fromNode":"n_is4","fromSide":"left","toNode":"n_is2","toSide":"right","label":"Feedback → scoring"},
+		{"id":"e_6_1","fromNode":"n_is6","fromSide":"bottom","toNode":"n_is1","toSide":"top","label":"config.yaml"},
+		{"id":"e_6_2","fromNode":"n_is6","fromSide":"bottom","toNode":"n_is2","toSide":"top","label":"config.yaml"},
+		{"id":"e_6_3","fromNode":"n_is6","fromSide":"bottom","toNode":"n_is3","toSide":"top","label":"config.yaml (TTS voices)"},
+		{"id":"e_6_4","fromNode":"n_is6","fromSide":"bottom","toNode":"n_is4","toSide":"top","label":"config.yaml (DB · auth)"},
+		{"id":"e_6_5","fromNode":"n_is6","fromSide":"bottom","toNode":"n_is5","toSide":"top","label":"config.yaml → sw.js"}
+	]
+}

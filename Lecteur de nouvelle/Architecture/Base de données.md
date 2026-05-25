@@ -231,15 +231,15 @@ data/newsfeed.db
 
 **But** : Version base de données des MCA (changements de configuration sans code). Miroir des fichiers `Bugs/MCA-XXX.md`.
 
-| Colonne | Type | Description |
-|---------|------|-------------|
-| `mca_number` | String (unique) | Ex: `MCA-001` |
-| `title` | String | Titre court |
-| `status` | String | `a_appliquer` / `applique` / `en_attente` |
-| `target_agent` | String | Agent visé par la mise à jour |
-| `description` | Text | Ce qui doit changer |
-| `justification` | Text | Pourquoi ce changement |
-| `blocking_ecr_id` | Integer FK → `ecr` | ECR bloquant si applicable |
+| Colonne           | Type               | Description                               |
+| ----------------- | ------------------ | ----------------------------------------- |
+| `mca_number`      | String (unique)    | Ex: `MCA-001`                             |
+| `title`           | String             | Titre court                               |
+| `status`          | String             | `a_appliquer` / `applique` / `en_attente` |
+| `target_agent`    | String             | Agent visé par la mise à jour             |
+| `description`     | Text               | Ce qui doit changer                       |
+| `justification`   | Text               | Pourquoi ce changement                    |
+| `blocking_ecr_id` | Integer FK → `ecr` | ECR bloquant si applicable                |
 
 **Qui écrit :** `backend/api/aftersales.py` — `POST /api/aftersales/mca` + `POST /api/aftersales/seed`
 
@@ -295,8 +295,8 @@ mca        >── ecr (blocking_ecr_id)
 
 ## Liens
 
-- [[Architecture/Modèle de données]] — structure des objets Python (RawNewsItem, catégories)
-- [[Architecture/Pipeline de traitement]] — flux qui alimente `news_items` et `daily_feeds`
+- [[Modèle de données]] — structure des objets Python (RawNewsItem, catégories)
+- [[Pipeline de traitement]] — flux qui alimente `news_items` et `daily_feeds`
 - [[Agents/Aftersales]] — consomme `feedbacks`, `news_comments`, `bug_reports`, `ecr`, `mca`
 - [[DB Viewer — SQLite Web]] — outil d'inspection en temps réel
 
