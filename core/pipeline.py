@@ -252,14 +252,27 @@ class Pipeline:
         session.flush()
 
     def _load_proposed_today(self, session, today: str | None = None) -> list[NewsItem]:
-        """Charge tous les news_items proposés pour aujourd'hui depuis la DB."""
-        from sqlalchemy import func
-        today = today or date.today().isoformat()
+        """Charge tous les news_items proposés pour aujourd'hui depuis la DB.
+
+        Utilise une plage datetime UTC couvrant toute la journée locale (America/Montreal)
+        pour éviter les décalages UTC/EDT qui cassent func.date() après 20h EDT.
+        """
+        from datetime import timedelta
+        from zoneinfo import ZoneInfo
+
+        today_str = today or date.today().isoformat()
+        today_date = date.fromisoformat(today_str)
+        tz = ZoneInfo("America/Montreal")
+        start_local = datetime(today_date.year, today_date.month, today_date.day, tzinfo=tz)
+        start_utc = start_local.astimezone(timezone.utc)
+        end_utc = start_utc + timedelta(days=1)
+
         return (
             session.query(NewsItem)
             .filter(
                 NewsItem.pipeline_status == "proposed",
-                func.date(NewsItem.created_at) == today,
+                NewsItem.created_at >= start_utc,
+                NewsItem.created_at < end_utc,
             )
             .all()
         )
@@ -308,8 +321,10 @@ class Pipeline:
 
     def _checkpoint(self, step: str, session, details: dict | None = None) -> None:
         """Enregistre la complétion d'une étape dans pipeline_checkpoints."""
+        from zoneinfo import ZoneInfo
+        run_date = datetime.now(ZoneInfo("America/Montreal")).date().isoformat()
         session.add(PipelineCheckpoint(
-            run_date=date.today().isoformat(),
+            run_date=run_date,
             step=step,
             checked_in_at=datetime.now(timezone.utc),
             details=json.dumps(details, ensure_ascii=False) if details else None,

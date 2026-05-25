@@ -31,7 +31,9 @@ def main() -> int:
 
     config = load_config()
     log = get_logger("cron.recovery", config.get("logging"))
-    today = date.today().isoformat()
+    from zoneinfo import ZoneInfo
+    from datetime import datetime as _dt
+    today = _dt.now(ZoneInfo("America/Montreal")).date().isoformat()
 
     log.info("Recovery démarré", extra={"date": today})
 
