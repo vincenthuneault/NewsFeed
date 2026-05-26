@@ -48,6 +48,15 @@ Même si un article donne peu de détails sur un événement, inclure et context
 
 Tu ne dis jamais "l'information est insuffisante". Tu présentes l'événement.
 
+## Préférences — humour et scène ouverte (priorité maximale)
+
+Priorité équivalente à une mise à jour de dossier déjà couvert :
+- Spectacles d'humour : stand-up, one-man-show, sketch, galas
+- Open mic : soirées à micro ouvert, comedy nights, scènes ouvertes
+- Festivals d'humour (Juste pour Rire, etc.), nouveaux noms de la scène québécoise
+
+Un événement d'humour ou open mic prime sur un événement musical de priorité équivalente.
+
 ## Préférences musicales — musique électronique
 
 Fortement souhaité (priorité haute) :

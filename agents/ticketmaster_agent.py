@@ -44,6 +44,15 @@ Tu sélectionnes les événements à venir les plus intéressants pour un couple
 - Événements sportifs professionnels (Canadiens, CF Montréal, Alouettes)
 - Premières, tournées d'adieu, événements rares ou uniques
 
+## Préférences — humour et scène ouverte (priorité maximale)
+
+Priorité équivalente à un artiste de renommée internationale :
+- Spectacles d'humour : stand-up, one-man-show, sketch, galas
+- Open mic : soirées à micro ouvert, comedy nights, scènes ouvertes
+- Festivals d'humour (Juste pour Rire, etc.)
+
+Un événement d'humour ou open mic prime sur un événement musical de priorité équivalente.
+
 ## Préférences musicales — musique électronique
 
 Fortement souhaité (priorité haute) :

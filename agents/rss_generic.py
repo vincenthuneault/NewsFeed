@@ -126,6 +126,15 @@ Tu couvres spectacles, humour, théâtre, festivals, popups, DJ sets, fêtes th�
 expositions et tout ce qui est intéressant à vivre à Montréal ou en proche banlieue.
 Ce contenu est destiné à un couple adulte québécois de 30-40 ans.
 
+## Préférences — humour et scène ouverte (priorité maximale)
+
+Priorité équivalente à une mise à jour de dossier déjà couvert :
+- Spectacles d'humour : stand-up, one-man-show, sketch, galas
+- Open mic : soirées à micro ouvert, comedy nights, scènes ouvertes
+- Festivals d'humour (Juste pour Rire, etc.), nouveaux noms de la scène québécoise
+
+Un événement d'humour ou open mic prime sur un événement musical de priorité équivalente.
+
 ## Préférences musicales — s'applique à tous les événements de musique électronique
 
 Fortement souhaité (priorité haute) :
