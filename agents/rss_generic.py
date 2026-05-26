@@ -126,6 +126,19 @@ Tu couvres spectacles, humour, théâtre, festivals, popups, DJ sets, fêtes th�
 expositions et tout ce qui est intéressant à vivre à Montréal ou en proche banlieue.
 Ce contenu est destiné à un couple adulte québécois de 30-40 ans.
 
+## Préférences musicales — s'applique à tous les événements de musique électronique
+
+Fortement souhaité (priorité haute) :
+house, bass house, deep house, melodic house, progressive house,
+melodic techno, EDM, dubstep, brostep, bass music
+
+À éviter (exclure ou pénaliser fortement) :
+pure techno, hard techno, warehouse, underground, experimental noise, boiler room
+
+Si le genre musical d'un événement correspond à la liste "à éviter", ne pas le sélectionner
+sauf si c'est un festival majeur avec d'autres artistes dans les genres souhaités.
+Si le genre n'est pas précisé, ne pas rejeter — juger sur le reste.
+
 ## Processus de sélection quotidien
 
 ### Étape 1 — Lecture exhaustive
@@ -137,7 +150,7 @@ développements aujourd'hui, c'est prioritaire.
 
 ### Étape 3 — Priorisation
 1. Mise à jour d'un événement déjà couvert — priorité maximale
-2. Événement unique ou limité dans le temps à venir
+2. Événement unique ou limité dans le temps, dans un genre musical fortement souhaité
 3. Ouverture, popup ou expérience originale à Montréal
 
 ### Étape 4 — Règle d'or
@@ -147,6 +160,7 @@ Contextualiser plutôt que rejeter. Tu ne dis jamais "l'information est insuffis
 - Politique municipale (budget, travaux, règlements, piste cyclable)
 - Conseil de ville ou décision administrative sans événement
 - Événement hors Montréal et proche banlieue
+- Événement de musique électronique exclusivement dans un genre "à éviter"
 
 Quota : maximum 5 articles par jour.\
 """,

@@ -44,14 +44,28 @@ Tu sélectionnes les événements à venir les plus intéressants pour un couple
 - Événements sportifs professionnels (Canadiens, CF Montréal, Alouettes)
 - Premières, tournées d'adieu, événements rares ou uniques
 
+## Préférences musicales — musique électronique
+
+Fortement souhaité (priorité haute) :
+house, bass house, deep house, melodic house, progressive house,
+melodic techno, EDM, dubstep, brostep, bass music
+
+À éviter (exclure ou pénaliser fortement) :
+pure techno, hard techno, warehouse, underground, experimental noise, boiler room
+
+Règle : si le genre d'un événement correspond à la liste "à éviter", ne pas le sélectionner
+sauf si c'est un festival multi-artistes incluant des genres souhaités.
+Si le genre n'est pas précisé dans les données, ne pas rejeter sur ce critère seul.
+
 ## Refusé
 - Artistes totalement inconnus du grand public
 - Événements génériques récurrents sans intérêt particulier
 - Événements hors de la région montréalaise
+- Événement de musique électronique exclusivement dans un genre "à éviter"
 
 ## Priorisation
 1. Artiste ou production de renommée nationale ou internationale
-2. Événement rare, unique, ou à venir dans moins de 3 semaines
+2. Genre musical fortement souhaité + artiste connu + à venir dans moins de 3 semaines
 3. Festival ou événement de grande envergure
 4. Match sportif professionnel à domicile
 

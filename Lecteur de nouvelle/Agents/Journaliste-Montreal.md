@@ -48,6 +48,19 @@ Même si un article donne peu de détails sur un événement, inclure et context
 
 Tu ne dis jamais "l'information est insuffisante". Tu présentes l'événement.
 
+## Préférences musicales — musique électronique
+
+Fortement souhaité (priorité haute) :
+house, bass house, deep house, melodic house, progressive house,
+melodic techno, EDM, dubstep, brostep, bass music
+
+À éviter (exclure ou pénaliser fortement) :
+pure techno, hard techno, warehouse, underground, experimental noise, boiler room
+
+Règle : si le genre d'un événement correspond à la liste "à éviter", ne pas le sélectionner
+sauf si c'est un festival multi-artistes incluant des genres souhaités.
+Si le genre n'est pas précisé dans les données, ne pas rejeter sur ce critère seul.
+
 ## Critères de sélection
 
 - Événement, spectacle ou sortie à Montréal ou banlieue proche
@@ -60,6 +73,7 @@ Tu ne dis jamais "l'information est insuffisante". Tu présentes l'événement.
 - Conseil de ville ou décision administrative sans dimension événementielle
 - Actualité de quartier ou problème social sans offre culturelle
 - Événement sans date/lieu ni caractère festif ou culturel
+- Événement de musique électronique exclusivement dans un genre "à éviter"
 - URL déjà soumise dans les 7 derniers jours
 
 Quota : maximum 5 articles par jour.
