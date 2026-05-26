@@ -11,7 +11,7 @@ fraicheur_heures: 24
 # Journaliste — Politique Canada
 
 > **Sujet** : Actualité politique fédérale canadienne — Ottawa, parlement, économie nationale, relations interprovinciales
-> **Source** : RSS — Radio-Canada, CBC, La Presse, Le Devoir
+> **Sources** : 10 RSS
 > **Catégorie DB** : `politique_ca`
 
 ---
@@ -69,14 +69,29 @@ Quota : maximum 5 articles par jour.
 
 ## Sources
 
-| Type | URL | Nom | Fiabilité |
-|------|-----|-----|-----------|
-| RSS | `https://ici.radio-canada.ca/rss/4159` | Radio-Canada Politique | ✅ Confirmée |
-| RSS | `https://rss.cbc.ca/lineup/politics.xml` | CBC Politics | ✅ Confirmée |
-| RSS | `https://www.lapresse.ca/actualites/politique/rss` | La Presse Politique | ✅ Confirmée |
-| RSS | `https://www.ledevoir.com/rss/section/politique/canada.xml` | Le Devoir — Canada | ✅ Confirmée |
-| RSS | `https://lactualite.com/feed/` | L'Actualité | ✅ Confirmée |
-| RSS | `https://nationalpost.com/category/news/politics/feed/` | National Post Politics | ⚠️ À vérifier |
+### RSS
+
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://ici.radio-canada.ca/rss/4159` | Radio-Canada Politique | ✅ Confirmée | Source principale politique fédérale (FR) |
+| `https://rss.cbc.ca/lineup/politics.xml` | CBC Politics | ✅ Confirmée | Source principale politique fédérale (EN) |
+| `https://www.lapresse.ca/actualites/politique/rss` | La Presse Politique | ✅ Confirmée | Couverture fédérale et provinciale |
+| `https://www.ledevoir.com/rss/section/politique/canada.xml` | Le Devoir — Canada | ✅ Confirmée | Analyse politique fédérale |
+| `https://lactualite.com/feed/` | L'Actualité | ✅ Confirmée | Magazine — angles longs et analyses |
+| `https://nationalpost.com/category/news/politics/feed/` | National Post Politics | ✅ Confirmée | Angle conservateur, politique nationale |
+| `https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/politics/` | Globe and Mail Politics | ✅ Confirmée | Presse nationale, analyses de fond |
+| `https://www.thestar.com/news/canada/politics.rss` | Toronto Star Politics | ✅ Confirmée | Centre-gauche, Ottawa et national |
+| `https://policyoptions.irpp.org/feed/` | Policy Options — IRPP | ✅ Confirmée | Think tank — politiques publiques canadiennes |
+| `https://globalnews.ca/canada/feed/` | Global News Canada | ✅ Confirmée | Télédiffuseur national, couverture large |
+
+### Sources sans RSS disponible
+
+| Nom | Raison |
+|-----|--------|
+| CTV News Politics | 404 — flux désactivé |
+| Maclean's | 403 — accès refusé |
+| Hill Times | Paywall complet |
+| iPolitics | 403 — accès refusé |
 
 ---
 

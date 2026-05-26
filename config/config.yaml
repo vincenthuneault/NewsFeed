@@ -153,6 +153,16 @@ rss:
         name: "Le Devoir — Canada"
       - url: "https://lactualite.com/feed/"
         name: "L'Actualité"
+      - url: "https://nationalpost.com/category/news/politics/feed/"
+        name: "National Post Politics"
+      - url: "https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/politics/"
+        name: "Globe and Mail Politics"
+      - url: "https://www.thestar.com/news/canada/politics.rss"
+        name: "Toronto Star Politics"
+      - url: "https://policyoptions.irpp.org/feed/"
+        name: "Policy Options — IRPP"
+      - url: "https://globalnews.ca/canada/feed/"
+        name: "Global News Canada"
 
     politique_qc:
       - url: "https://ici.radio-canada.ca/rss/4201"
@@ -163,6 +173,14 @@ rss:
         name: "La Presse Politique"
       - url: "https://lactualite.com/feed/"
         name: "L'Actualité"
+      - url: "https://www.journaldemontreal.com/rss"
+        name: "Journal de Montréal"
+      - url: "https://www.tvanouvelles.ca/rss"
+        name: "TVA Nouvelles"
+      - url: "https://www.noovo.info/rss/politique.xml"
+        name: "Noovo Info — Politique"
+      - url: "https://iris-recherche.qc.ca/feed/"
+        name: "IRIS — Institut de recherche"
 
     politique_intl:
       - url: "https://ici.radio-canada.ca/rss/4171"
@@ -177,6 +195,16 @@ rss:
         name: "The Guardian World"
       - url: "https://www.lemonde.fr/international/rss_full.xml"
         name: "Le Monde International"
+      - url: "https://www.aljazeera.com/xml/rss/all.xml"
+        name: "Al Jazeera"
+      - url: "https://www.politico.eu/rss/"
+        name: "Politico Europe"
+      - url: "https://www.courrierinternational.com/feed/all/rss.xml"
+        name: "Courrier International"
+      - url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+        name: "NYT World"
+      - url: "https://rss.dw.com/rdf/rss-en-world"
+        name: "Deutsche Welle"
 
     evenements_mtl:
       - url: "https://ici.radio-canada.ca/rss/4169"

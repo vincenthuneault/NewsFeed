@@ -68,14 +68,45 @@ Quota : maximum 5 articles par jour. Moins est normal — les actualités locale
 
 ## Sources
 
-| Type | URL / Identifiant | Nom | Fiabilité |
-|------|-------------------|-----|-----------|
-| RSS | `https://www.journallesoir.ca/feed/` | Journal Le Soir | ✅ Confirmée |
-| RSS | `https://www.les2rives.com/feed/` | Les 2 Rives (Sorel-Tracy) | ✅ Confirmée |
-| Scraping HTML | `https://www.contrecoeur.ca/actualites` | Ville de Contrecoeur (officiel) | ✅ Confirmée |
-| Scraping HTML | `https://ville.sorel-tracy.qc.ca/actualites` | Ville de Sorel-Tracy (officiel) | ✅ Confirmée |
-| RSS | `https://lecontrecourant.ca/feed/` | Le Contrecourant | ⚠️ À vérifier |
-| RSS | `https://soreltraci.com/feed/` | Sorel-Tracy Express | ⚠️ À vérifier |
+### Presse régionale — RSS
+
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://www.journallesoir.ca/feed/` | Journal Le Soir | ✅ Confirmée | Journal régional Contrecoeur / Varennes |
+| `https://www.les2rives.com/feed/` | Les 2 Rives | ✅ Confirmée | Sorel-Tracy — journal local |
+| `https://lecontrecourant.ca/feed/` | Le Contrecourant | ✅ Confirmée | Journalisme citoyen Contrecoeur |
+
+### Sites municipaux — Scraping HTML
+
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://www.ville.contrecoeur.qc.ca/actualites` | Ville de Contrecoeur | ✅ Confirmée | Actualités officielles |
+| `https://www.ville.contrecoeur.qc.ca/ville/administration/avis-publics` | Avis publics — Contrecoeur | ✅ Confirmée | Filtre 30 jours |
+| `https://ville.sorel-tracy.qc.ca/actualites` | Ville de Sorel-Tracy | ✅ Confirmée | |
+
+### Alertes critiques — bypass LLM (toujours incluses)
+
+| Source | Méthode | Statut | Notes |
+|--------|---------|--------|-------|
+| Environnement Canada | Scraping `meteo.gc.ca/warnings/report_f.html?qc12=` | ✅ Actif | Alertes Montérégie — préfixe ⚠️ |
+| Hydro-Québec pannes | API GeoJSON | ⚠️ Phase 1 — stub | Voir note ci-dessous |
+| Québec.ca eau potable | Scraping `avis.eau.mern.gouv.qc.ca` | ✅ Actif | Filtre région Contrecœur — préfixe 🚰 |
+
+### Hydro-Québec — Note Phase 2
+
+Le site `pannes.hydroquebec.com` est un SPA JavaScript complet. Toutes les URL
+d'API testées (GeoJSON, JSON, RSS, XML) retournent le shell HTML de l'app sans données.
+Les données ne sont jamais exposées sans exécution JavaScript.
+
+**Blocage confirmé (2026-05-26)** : aucune API publique accessible par requête HTTP simple.
+
+Options Phase 2 :
+- Playwright/headless browser (ajout d'une dépendance lourde au pipeline)
+- Alertes HQ via les médias régionaux (Les 2 Rives, Le Soir couvrent les pannes majeures)
+- Surveillance passive : si une panne majeure touche Contrecoeur, EC / municipalité publie aussi
+
+**Décision** : stub maintenu tel quel. Les pannes majeures sont couvertes indirectement
+via la presse régionale RSS. Phase 2 suspendue — ratio effort/valeur insuffisant.
 
 ---
 

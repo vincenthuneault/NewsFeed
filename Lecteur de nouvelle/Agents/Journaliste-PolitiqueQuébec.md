@@ -11,7 +11,7 @@ fraicheur_heures: 24
 # Journaliste — Politique Québec
 
 > **Sujet** : Actualité politique provinciale québécoise — Assemblée nationale, gouvernement du Québec, enjeux sociaux provinciaux
-> **Source** : RSS — Radio-Canada, Le Devoir, La Presse, L'Actualité
+> **Sources** : 8 RSS
 > **Catégorie DB** : `politique_qc`
 
 ---
@@ -68,14 +68,27 @@ Quota : maximum 5 articles par jour.
 
 ## Sources
 
-| Type | URL | Nom | Fiabilité |
-|------|-----|-----|-----------|
-| RSS | `https://ici.radio-canada.ca/rss/4201` | Radio-Canada Québec | ✅ Confirmée |
-| RSS | `https://www.ledevoir.com/rss/section/politique/quebec.xml` | Le Devoir — Québec | ✅ Confirmée |
-| RSS | `https://www.lapresse.ca/actualites/politique/rss` | La Presse Politique | ✅ Confirmée |
-| RSS | `https://lactualite.com/feed/` | L'Actualité | ✅ Confirmée |
-| RSS | `https://www.journaldemontreal.com/rss/actualite.xml` | Journal de Montréal | ⚠️ À vérifier |
-| RSS | `https://www.tvanouvelles.ca/rss/nouvelles.xml` | TVA Nouvelles | ⚠️ À vérifier |
+### RSS
+
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://ici.radio-canada.ca/rss/4201` | Radio-Canada Québec | ✅ Confirmée | Source principale, politique QC |
+| `https://www.ledevoir.com/rss/section/politique/quebec.xml` | Le Devoir — Québec | ✅ Confirmée | Analyse et fond politique provincial |
+| `https://www.lapresse.ca/actualites/politique/rss` | La Presse Politique | ✅ Confirmée | Partagée avec politique_ca |
+| `https://lactualite.com/feed/` | L'Actualité | ✅ Confirmée | Magazine, angles longs et analyses |
+| `https://www.journaldemontreal.com/rss` | Journal de Montréal | ✅ Confirmée | Tabloïd — angle populaire québécois |
+| `https://www.tvanouvelles.ca/rss` | TVA Nouvelles | ✅ Confirmée | Télédiffuseur QC — couverture large |
+| `https://www.noovo.info/rss/politique.xml` | Noovo Info — Politique | ✅ Confirmée | Section politique dédiée |
+| `https://iris-recherche.qc.ca/feed/` | IRIS — Institut de recherche | ✅ Confirmée | Analyses socio-économiques québécoises |
+
+### Sources sans RSS disponible
+
+| Nom | Raison |
+|-----|--------|
+| Journal de Québec | 404 — flux désactivé |
+| Le Soleil | 404 — flux désactivé |
+| Le Droit (Gatineau) | 404 — flux désactivé |
+| Le Nouvelliste | 404 — flux désactivé |
 
 ---
 

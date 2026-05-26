@@ -2,7 +2,7 @@
 id: journaliste-tech-ai
 type: journaliste
 status: actif
-agent_class: RSSAgent
+agent_class: RSSAgent + SitemapAgent
 categorie: tech_ai
 quota_quotidien: 5
 fraicheur_heures: 24
@@ -11,7 +11,7 @@ fraicheur_heures: 24
 # Journaliste — Technologie & Intelligence artificielle
 
 > **Sujet** : Technologie, intelligence artificielle, cybersécurité, réglementation tech  
-> **Source** : RSS — Ars Technica  
+> **Sources** : 13 RSS + 3 sitemaps
 > **Catégorie DB** : `tech_ai`
 
 ---
@@ -68,12 +68,39 @@ Quota : maximum 5 articles par jour.
 
 ## Sources
 
-| Type | URL | Nom | Fiabilité |
-|------|-----|-----|-----------|
-| RSS | `https://feeds.arstechnica.com/arstechnica/technology-lab` | Ars Technica | ✅ Confirmée |
+### RSS
 
-> **Note** : The Verge a été retiré et blacklisté (paywall systématique — `content_gate.blacklisted_domains`).  
-> Sources candidates à ajouter : MIT Technology Review, Wired, The Information, 9to5Mac.
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://feeds.arstechnica.com/arstechnica/technology-lab` | Ars Technica | ✅ Confirmée | Analyse technique — source principale |
+| `https://techcrunch.com/category/artificial-intelligence/feed/` | TechCrunch AI | ✅ Confirmée | Startups IA, annonces produits |
+| `https://www.technologyreview.com/feed/` | MIT Technology Review | ✅ Confirmée | Recherche, impacts sociétaux de la tech |
+| `https://venturebeat.com/category/ai/feed/` | VentureBeat AI | ✅ Confirmée | IA enterprise, modèles, déploiements |
+| `https://www.wired.com/feed/rss` | Wired | ✅ Confirmée | Angle sociétal, culture tech |
+| `https://spectrum.ieee.org/feeds/feed.rss` | IEEE Spectrum | ✅ Confirmée | Ingénierie et standards tech |
+| `https://www.theregister.com/headlines.atom` | The Register | ✅ Confirmée | Sécurité, infrastructure, enterprise |
+| `https://blogs.nvidia.com/feed/` | NVIDIA Blog | ✅ Confirmée | GPU, IA hardware, CUDA — partagé avec vehicules_ev |
+| `https://hnrss.org/best` | Hacker News Best | ✅ Confirmée | Sélection communauté dev/tech |
+| `https://thegradient.pub/rss/` | The Gradient | ✅ Confirmée | ML research — angle académique |
+| `https://blog.google/innovation-and-ai/technology/ai/rss/` | Google AI Blog | ✅ Confirmée | Annonces Google/DeepMind |
+| `https://lastweekin.ai/feed` | Last Week in AI | ✅ Confirmée | Résumé hebdo IA — signal de tendance |
+| `https://siliconangle.com/feed/` | SiliconANGLE | ✅ Confirmée | Enterprise tech, cloud, IA business |
+
+### Sitemaps
+
+| URL | Nom | Filtre | Notes |
+|-----|-----|--------|-------|
+| `https://www.anthropic.com/sitemap.xml` | Anthropic | `/news/` | Publications et annonces officielles |
+| `https://deepmind.google/sitemap.xml` | Google DeepMind | `/blog/` | Recherche et publications DeepMind |
+| `https://openai.com/sitemap.xml` | OpenAI | `research` | Publications de recherche OpenAI |
+
+### Sources sans RSS disponible
+
+| Nom | Raison |
+|-----|--------|
+| The Verge | Retiré et blacklisté — paywall systématique (`content_gate.blacklisted_domains`) |
+| The Information | Paywall complet |
+| 9to5Mac | Non prioritaire — angle Apple accessoires |
 
 ---
 

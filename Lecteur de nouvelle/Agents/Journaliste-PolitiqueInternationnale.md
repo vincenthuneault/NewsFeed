@@ -3,7 +3,7 @@ id: journaliste-politique-internationale
 type: journaliste
 status: actif
 agent_class: RSSAgent
-categorie: politique_internationale
+categorie: politique_intl
 quota_quotidien: 5
 fraicheur_heures: 24
 ---
@@ -11,7 +11,7 @@ fraicheur_heures: 24
 # Journaliste — Politique Internationale
 
 > **Sujet** : Actualité politique mondiale — géopolitique, États-Unis, Europe, relations internationales
-> **Source** : RSS — médias francophones et anglophones internationaux
+> **Sources** : 11 RSS
 > **Catégorie DB** : `politique_internationale`
 
 ---
@@ -70,15 +70,30 @@ Quota : maximum 5 articles par jour.
 
 ## Sources
 
-| Type | URL | Nom | Fiabilité |
-|------|-----|-----|-----------|
-| RSS | `https://ici.radio-canada.ca/rss/4171` | Radio-Canada International | ✅ Confirmée |
-| RSS | `https://www.rfi.fr/fr/rss-actus-internationales` | RFI — Actus internationales | ✅ Confirmée |
-| RSS | `https://www.france24.com/fr/rss` | France 24 FR | ✅ Confirmée |
-| RSS | `https://feeds.bbci.co.uk/news/world/rss.xml` | BBC World News | ✅ Confirmée |
-| RSS | `https://www.theguardian.com/world/rss` | The Guardian World | ✅ Confirmée |
-| RSS | `https://www.lemonde.fr/international/rss_full.xml` | Le Monde International | ✅ Confirmée |
-| RSS | `https://www.courrierinternational.com/feed/all/rss.xml` | Courrier International | ⚠️ À vérifier |
+### RSS
+
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://ici.radio-canada.ca/rss/4171` | Radio-Canada International | ✅ Confirmée | Perspective canadienne-francophone |
+| `https://www.rfi.fr/fr/rss-actus-internationales` | RFI | ✅ Confirmée | Radio France Internationale — couverture mondiale FR |
+| `https://www.france24.com/fr/rss` | France 24 | ✅ Confirmée | Chaîne info internationale FR |
+| `https://feeds.bbci.co.uk/news/world/rss.xml` | BBC World News | ✅ Confirmée | Référence mondiale EN |
+| `https://www.theguardian.com/world/rss` | The Guardian World | ✅ Confirmée | Angle progressiste, enquêtes et analyses |
+| `https://www.lemonde.fr/international/rss_full.xml` | Le Monde International | ✅ Confirmée | Référence presse française |
+| `https://www.aljazeera.com/xml/rss/all.xml` | Al Jazeera | ✅ Confirmée | Perspective Moyen-Orient, Afrique, Asie |
+| `https://www.politico.eu/rss/` | Politico Europe | ✅ Confirmée | Union européenne, politique institutionnelle |
+| `https://www.courrierinternational.com/feed/all/rss.xml` | Courrier International | ✅ Confirmée | Revue de presse mondiale traduite en FR |
+| `https://rss.nytimes.com/services/xml/rss/nyt/World.xml` | NYT World | ✅ Confirmée | Référence américaine — géopolitique |
+| `https://rss.dw.com/rdf/rss-en-world` | Deutsche Welle | ✅ Confirmée | Perspective européenne germanophone |
+
+### Sources sans RSS disponible
+
+| Nom | Raison |
+|-----|--------|
+| Reuters | DNS inaccessible depuis ce serveur (`feeds.reuters.com`) |
+| AP News | 403 — accès refusé |
+| Foreign Policy | Paywall complet |
+| The Economist | Paywall complet |
 
 ---
 
