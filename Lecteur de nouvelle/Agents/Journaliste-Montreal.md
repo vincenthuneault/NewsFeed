@@ -2,7 +2,7 @@
 id: journaliste-montreal
 type: journaliste
 status: actif
-agent_class: EventsMontrealAgent
+agent_class: EventsMontrealAgent + TicketmasterAgent
 categorie: evenements_mtl
 quota_quotidien: 5
 fraicheur_heures: 24
@@ -11,7 +11,7 @@ fraicheur_heures: 24
 # Journaliste — Montréal Événements & Culture
 
 > **Sujet** : Événements culturels, spectacles, sorties et vie culturelle montréalaise
-> **Source** : RSS — Radio-Canada, Voir, MTL Blog
+> **Sources** : 8 RSS + API Ticketmaster (3 requêtes)
 > **Catégorie DB** : `evenements_mtl`
 
 ---
@@ -69,14 +69,40 @@ Quota : maximum 5 articles par jour.
 
 ## Sources
 
-| Type | URL | Nom | Fiabilité |
-|------|-----|-----|-----------|
-| RSS | `https://ici.radio-canada.ca/rss/4169` | Radio-Canada Montréal | ✅ Confirmée |
-| RSS | `https://ici.radio-canada.ca/rss/4175` | Radio-Canada Arts & culture | ✅ Confirmée |
-| RSS | `https://ici.radio-canada.ca/rss/4503` | Radio-Canada Grand Montréal | ✅ Confirmée |
-| RSS | `https://voir.ca/feed/` | Voir.ca | ✅ Confirmée |
-| RSS | `https://www.mtlblog.com/feeds/news.rss` | MTL Blog | ✅ Confirmée |
-| RSS | `https://montrealgazette.com/entertainment/feed/` | Montreal Gazette — Entertainment | ⚠️ À vérifier |
+### RSS
+
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://ici.radio-canada.ca/rss/4169` | Radio-Canada Montréal | ✅ Confirmée | Actualité générale Montréal |
+| `https://ici.radio-canada.ca/rss/4175` | Radio-Canada Arts & culture | ✅ Confirmée | Sorties, spectacles, culture |
+| `https://ici.radio-canada.ca/rss/4503` | Radio-Canada Grand Montréal | ✅ Confirmée | Région métropolitaine |
+| `https://www.mtlblog.com/feeds/news.rss` | MTL Blog | ✅ Confirmée | Lifestyle, sorties, food |
+| `https://journalmetro.com/feed/` | Journal Métro | ✅ Confirmée | Actualité locale Montréal |
+| `https://www.lapresse.ca/arts/spectacles/rss` | La Presse — Spectacles | ✅ Confirmée | Critiques, annonces culturelles majeures |
+| `https://lebordel.ca/feed` | Le Bordel | ✅ Confirmée | Comédie, variété — venue Montréal |
+| `https://www.olympiamontreal.com/feed` | L'Olympia | ✅ Confirmée | Concerts — venue Montréal |
+
+### Sources sans RSS disponible
+
+| Nom | Raison |
+|-----|--------|
+| Voir.ca | Erreur 500 persistante sur le feed |
+| Montreal Gazette | À vérifier |
+
+### API Ticketmaster
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Agent class | `TicketmasterAgent` |
+| Marché | `522` (Montréal) |
+| Requête 1 | Tous les événements Montréal |
+| Requête 2 | `classificationName=music` — concerts |
+| Requête 3 | `classificationName=Arts & Theatre` — humour, théâtre, arts |
+| Clé API | `secrets/.env → TICKETMASTER_API_KEY` |
+| Quota | 5 événements max (sélection LLM) |
+
+Note : les URLs `ticketmaster.ca` sont dans `_SKIP_DOMAINS` de l'ArticleFetcher — le
+`raw_content` construit par l'agent (événement structuré) est conservé intact dans le pipeline.
 
 ---
 

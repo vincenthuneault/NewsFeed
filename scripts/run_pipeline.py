@@ -42,16 +42,22 @@ def main(dry_run: bool = False) -> int:
         from agents.youtube_trending import YouTubeTrendingAgent
         from agents.viral_trending import ViralTrendingAgent
         from agents.events_montreal import EventsMontrealAgent
+        from agents.ticketmaster_agent import TicketmasterAgent
         from agents.local_contrecoeur import LocalContrecoeurAgent
         from agents.rss_generic import RSSAgent
+        from agents.sitemap_agent import SitemapAgent
+        from agents.hf_papers_agent import HFPapersAgent
 
         agents = [
             YouTubeSubsAgent(config),
             YouTubeTrendingAgent(config),
             ViralTrendingAgent(config),
             EventsMontrealAgent(config),
+            TicketmasterAgent(config),
             LocalContrecoeurAgent(config),
             *RSSAgent.from_config(config),
+            *SitemapAgent.from_config(config),
+            HFPapersAgent(config),
         ]
 
         # 2. Orchestrateur

@@ -30,12 +30,13 @@ _HEADERS = {
     "Accept-Language": "fr-CA,fr;q=0.9,en;q=0.8",
 }
 
-# Domaines sans texte d'article à fetcher (vidéo, apps, etc.)
+# Domaines sans texte d'article à fetcher (vidéo, apps, événements structurés, etc.)
 _SKIP_DOMAINS = {
     "youtube.com", "youtu.be",
     "twitter.com", "x.com",
     "instagram.com", "tiktok.com",
     "facebook.com",
+    "ticketmaster.ca", "ticketmaster.com",  # raw_content déjà construit par TicketmasterAgent
 }
 
 

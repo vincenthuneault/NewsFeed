@@ -11,7 +11,7 @@ fraicheur_heures: 48
 # Journaliste — Espace & Exploration spatiale
 
 > **Sujet** : Industrie spatiale et exploration de l'espace — missions, lanceurs, technologies orbitales, acteurs publics et privés  
-> **Source** : RSS — SpaceNews  
+> **Sources** : 17 RSS  
 > **Catégorie DB** : `spatial`
 
 ---
@@ -70,11 +70,43 @@ Quota : maximum 5 articles par jour.
 
 ## Sources
 
-| Type | URL | Nom | Fiabilité |
-|------|-----|-----|-----------|
-| RSS | `https://spacenews.com/feed/` | SpaceNews | ✅ Confirmée |
+### RSS
 
-> **Note** : SpaceNews est la seule source configurée. Si la couverture est insuffisante certains jours, envisager d'ajouter NASA.gov/news-release/feed/ ou ESA's newsroom RSS.
+| URL | Nom | Fiabilité | Notes |
+|-----|-----|-----------|-------|
+| `https://spacenews.com/feed/` | SpaceNews | ✅ Confirmée | Industrie spatiale, lancements, contrats — source principale |
+| `https://www.nasa.gov/feeds/iotd-feed/` | NASA Image of the Day | ✅ Confirmée | Images spatiales officielles NASA |
+| `https://www.nasa.gov/rss/dyn/breaking_news.rss` | NASA Breaking News | ✅ Confirmée | Actualités majeures NASA |
+| `https://earthobservatory.nasa.gov/feeds/image-of-the-day.rss` | NASA Earth Observatory | ✅ Confirmée | Images Terre depuis satellites |
+| `https://science.nasa.gov/feed/` | NASA Science | ✅ Confirmée | Skywatching, missions scientifiques |
+| `https://www.esa.int/rssfeed/Our_Activities/Space_Science` | ESA Space Science | ✅ Confirmée | Missions ESA, science spatiale européenne |
+| `https://www.space.com/feeds/all` | Space.com | ✅ Confirmée | Actualité spatiale générale grand public |
+| `https://www.nasaspaceflight.com/feed/` | NASASpaceflight | ✅ Confirmée | SpaceX, Starship, lancements en détail |
+| `https://arstechnica.com/science/space/feed/` | Ars Technica Space | ✅ Confirmée | Analyse technique spatiale |
+| `https://www.universetoday.com/feed/` | Universe Today | ✅ Confirmée | Astrophysique et vulgarisation scientifique |
+| `https://skyandtelescope.org/feed/` | Sky & Telescope | ✅ Confirmée | Astronomie, événements célestes |
+| `https://www.astronomy.com/feed/` | Astronomy Magazine | ✅ Confirmée | Astronomie générale, observations |
+| `https://www.livescience.com/space/rss` | Live Science Space | ✅ Confirmée | Découvertes spatiales, vulgarisation |
+| `https://www.sciencedaily.com/rss/space_time.xml` | ScienceDaily Space | ✅ Confirmée | Publications scientifiques spatiales |
+| `https://www.nature.com/natastron.rss` | Nature Astronomy | ✅ Confirmée | Recherche astrophysique (peer-reviewed) |
+| `https://rss.arxiv.org/rss/astro-ph` | arXiv Astrophysics | ✅ Confirmée | Preprints astrophysique |
+| `https://in-the-sky.org/rss.php` | In-The-Sky Montréal | ✅ Confirmée | Événements visibles depuis Montréal (lat 45.41°N) |
+
+### Sources sans RSS disponible
+
+| Nom | Format | Notes |
+|-----|--------|-------|
+| Webb Telescope (webbtelescope.org) | HTML — pas de RSS | Couvert via NASA Science (`science.nasa.gov/feed/`) |
+| HubbleSite | HTML — pas de RSS | URL retourne une page WordPress |
+| Canadian Space Agency | 404 — RSS désactivé | |
+| JPL News | 403 Forbidden | |
+| The Planetary Society Blog | 404 — flux supprimé | |
+| ESA Webb (esawebb.org) | 404 — pas de RSS | |
+| Spaceflight Now | Web uniquement | Calendrier de lancements, pas de RSS |
+| Next Spaceflight | API uniquement | |
+| Heavens Above | Web personnalisé | ISS/satellites visibles, pas de RSS |
+| Time and Date Astronomy | Web uniquement | |
+| Minor Planet Center | Web/Data uniquement | Astéroïdes, pas de RSS |
 
 ---
 
